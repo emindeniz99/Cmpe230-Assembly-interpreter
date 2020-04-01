@@ -1,0 +1,28 @@
+Test 3
+======
+
+Input:
+
+
+Output:
+21 
+
+
+------------
+code segment
+   mov ax,5h
+   mov dx,1h
+   mov bx,2
+   div bx
+   mov cx,ax
+   mov bx,dx
+   mov ah,2h
+   mov dl,cl
+   add dl,'0'
+   int 21h
+   mov dl,bl
+   add dl,'0'
+   int 21h
+   int 20h 
+code ends
+------------

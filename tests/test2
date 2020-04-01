@@ -1,0 +1,46 @@
+TEST2 
+=====
+
+Input: 
+
+
+Output:
+0mn 
+
+
+Important Note: 
+Please note that when using INT 21h with AH=02h to print a character, 
+a copy of the printed character is placed in AL.   Please see: 
+http://spike.scu.edu.au/~barry/interrupts.html  
+
+
+------------------
+code segment
+   mov  ax,8001h
+   mov  bx,8001h
+   rcl  ax,1h
+   jc   label1
+   add  ax,1
+label1: 
+   rcr  bx,2h
+   shl  bx,1h 
+   shr  bx,1h
+   push ax
+   push bx
+   pop  cx
+   mov  ah,2h 
+   mov  dl,cl
+   add  dl,'0' 
+   int  21h 
+   mov  cx,sp
+   mov  dl,cl
+   and  dl,0fh 
+   add  dl,'a' 
+   int  21h 
+   mov  dl,al
+   and  dl,0fh 
+   add  dl,'a' 
+   int  21h 
+   int  20h    
+code ends
+------------------

@@ -1,0 +1,25 @@
+Test4
+=====
+
+
+Input: 
+abcde
+
+Output:
+abcde
+
+
+-------------
+code segment
+  mov cx,5h 
+more:
+  mov ah,01h
+  int 21h
+  mov dl,al
+  mov ah,2h  
+  int 21h
+  dec cx
+  jnz more
+  int 20h
+code ends 
+-------------

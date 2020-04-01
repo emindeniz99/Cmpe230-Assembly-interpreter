@@ -1,0 +1,25 @@
+Test5
+=====
+
+Input:
+
+
+Output:
+JK
+
+
+---------------
+code segment
+  mov ax,8010h
+  mov bx,4h
+  mul bx
+  or  dx,8h 
+  mov ah,02
+  add dl,40h 
+  int 21h
+  add al,1h 
+  mov dl,al
+  int 21h
+  int 20h 
+code ends
+---------------
