@@ -1,0 +1,1 @@
+gcc -o main.o main.cpp -lstdc++ && ./main.o sample.txt

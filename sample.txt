@@ -1,21 +1,24 @@
+
+sample test
+
 code segment
-  mov bx,al    
+  mOV bx,al    
 more:   
   mov ah,01h
   int 21h
   mov    dl   ,   al
   mov ah,2h  
   mov al,21h
-  mov b[bx] , "$"
+  mov b[bx] ,    "$"
   mov w[bx] , "as"
   mov ah,09
-  mov bx ,offset number+4
+  mov bx ,   offset     number+4
 
 
   cmp dl ,   " "
   cmp dl ,   ''
   cmp dl ,   ' '
-  cmp dl , [OFFSET  va]
+  cmp dl ,   [OFFSET  va  ]
   cmp dl , OFFSET  va
   cmp dl ,  OFFSET number + 4
 
@@ -26,5 +29,7 @@ mordde:
   jnz more
   int 20h
 code ends 
+
+
 
 

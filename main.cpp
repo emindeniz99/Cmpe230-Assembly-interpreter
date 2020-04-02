@@ -58,11 +58,12 @@ vector<string> commands;
 
 // functions
 void strip(string &str);
+void lowerCase(string &str);
 
 bool mov(string a, string b);
 bool add(string a, string b);
 
-int main()
+int main(int argc, char *argv[])
 {
    *pax = 1;
    *pbx = 7;
@@ -70,41 +71,66 @@ int main()
 
    // 1. Read instruction lines
 
-   // example parsing in cpp
-   // foo=1,2,3,4
-   // bar=0
-   string filename;
-   // cin >> filename;
-   ifstream file("sample.txt");
-
-   string line;
-   int sayac = 0;
-   while (getline(file, line))
+   if (argv[1] == NULL)
    {
+      cerr << "Please, give filename as an argument" << endl;
+      return 0;
+   }
+   cout << "Loaded filename: " << argv[1] << endl;
+   ifstream file("./" + (string)argv[1]);
+
+   if (file.peek() == EOF) // checks if file exists or not
+   {
+      cerr << "Your file isn't found. Please, give exists filename as an argument" << endl;
+      return 0;
+   }
+   string line;
+   int sayac = -1;
+   while (getline(file, line, '\n'))
+   {
+      strip(line); // get rid of return carriage
+      // ref: https://stackoverflow.com/questions/14295420/c-cout-overwriting-itself-while-in-for-loop
+
+      if (line == "") // skip empty lines
+         continue;
+
       if (line.find("code segment") != string::npos)
       {
-         cout << "code segment" << endl;
+         // cout << "code segment" << endl;
+         sayac = 0;
          continue;
       }
+
+      // wait until code segment is seen
+      if (sayac < 0)
+         continue;
+
+      // break if code ends
       if (line.find("code ends") != string::npos)
       {
-         cout << "bitti" << line.find("code ends") << endl;
+         // cout << "bitti" << line.find("code ends") << endl;
          break;
       }
-      // cout<<"line:"<<line<<endl;
+
       stringstream ss(line); // MOV AX,[ 0abcdh ]
       string ins;
       ss >> ins; // MOV
-      // cout<<ins<<endl;
+
       string delimiter = ":";
       if (ins[ins.length() - 1] == ':')
       {
-         cout << "label buldum " << endl;
+         if (mymap.count(ins))
+         {
+            cerr << "Error occur when reading file" << endl;
+            cerr << "Duplicated Label ! at\n"
+                 << line << endl;
+            return 0;
+         }
+         // cout << "label buldum "<< endl;
          mymap[ins] = sayac;
       }
       else
       {
-
          commands.push_back(line);
       }
 
@@ -140,14 +166,16 @@ int main()
 
    for (int i = 0; i < commands.size(); i++)
    {
-      cout << "  komut : " << commands[i] << endl;
+      cout << "[" << i << "] " << commands[i] << endl;
    }
+
    map<string, int>::iterator it = mymap.begin();
 
-   cout << "mymap contains:\n";
+   cout << "Labels:\n";
    for (it = mymap.begin(); it != mymap.end(); ++it)
       cout << it->first << " => " << it->second << '\n';
-   cout << "program çalışmaya başlıyor" << endl;
+   cout << endl
+        << "Program starts execution" << endl;
    while (PC != commands.size())
    {
 
@@ -156,6 +184,8 @@ int main()
       string ins;
       iss >> ins;
       strip(ins);
+
+      lowerCase(ins);
 
       if (currcmd.find(",") != string::npos)
       {
@@ -166,7 +196,7 @@ int main()
          iss >> second;
          strip(first);
          strip(second);
-         cout << "2 par: " << ins << " Par1: " << first << " Par2: " << second << endl;
+         cout << "Ins: " << ins << " Dest: " << first << " Src: " << second << endl;
 
          if (ins == "mov")
          {
@@ -377,7 +407,7 @@ void strip(string &str)
    }
    for (int i = str.length() - 1; i >= 0; i--)
    {
-      if (str[i] == ' ')
+      if (str[i] == ' ' || str[i] == '\r' || str[i] == '\n')
       {
          end--;
       }
@@ -386,18 +416,30 @@ void strip(string &str)
          break;
       }
    }
-   str = str.substr(start, end - start + 1);
+   if (end >= start)
+      str = str.substr(start, end - start + 1);
+   else
+      str = "";
 }
+
+void lowerCase(string &str)
+{
+   for (int i = 0; i < str.length(); i++)
+   {
+      str[i]=tolower(str[i]);
+   }
+}
+
 // si di is not working, change them to pointer
-map<string,unsigned short *> converter16bit = { 
+map<string, unsigned short *> converter16bit = {
     {"ax", pax},
     {"bx", pbx},
     {"cx", pcx},
     {"dx", pdx}
-    
-    };
-    
-    map<string,unsigned char *> converter8bit = { 
+
+};
+
+map<string, unsigned char *> converter8bit = {
     {"al", pal},
     {"ah", pah},
     {"bl", pbl},
@@ -406,28 +448,21 @@ map<string,unsigned short *> converter16bit = {
     {"ch", pch},
     {"dl", pdl},
     {"dh", pdh}
-    
-    };
+
+};
 
 // Instruction functions
-bool mov(string b, string a) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
+bool mov(string a, string b) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
 {
-   cout << "test123" << endl;
+   cout << a <<"<-"<< b << endl;
 
-   cout << "c" << endl;
-   cout << a << endl;
-   cout << b << endl;
-
-   cout << endl
-        << "onurcanduts:" << endl;
    // (*(converter[b])) = (*(converter[a]));
-   cout << sizeof(*(converter8bit[a+"d"])) << endl;
-   cout << sizeof(*(converter16bit[b])) << endl;
+      print_hex(*(converter16bit[a]));
+      print_hex(*(converter8bit[b]));
 
    return true;
 }
 
 bool add(string a, string b)
 {
-
 }
