@@ -9,12 +9,17 @@ more:
   mov    dl   ,   al
   mov ah,2h  
   mov al,21h
-  mov b[bx] ,    "$"
-  mov w[bx] , "as"
+  mov b[   bx   ] ,    "$"
+  mov w[bx] , b'c'
   mov ah,09
   mov bx ,   offset     number+4
-
-
+mov bx,0DEFAh
+topla cx, dx // print error
+    mov w   [1234d], 0A103h
+    mov b[1246d], 10d
+    add dl,    '0'
+  mov dl, ' '
+   add dl, '0'
   cmp dl ,   " "
   cmp dl ,   ''
   cmp dl ,   ' '
@@ -22,14 +27,46 @@ more:
   cmp dl , OFFSET  va
   cmp dl ,  OFFSET number + 4
 
+     mov dl, greater
+   mov al, 7
+   mul first_el
+   cmp ax, 50d
+   ja res
+   mov ah, 02h
+   mov dl, lower
+   int 21h
+   mov w[si],bx
+mov cx,202h
+or al,bl
+and al,b[si]
+xor ax,ax
+    nop
+
+MSG DB "Hello World.$" ; A string variable with a value.
+MOV DX, OFFSET MSG ; DX points to (holds the address of) the string
+
+mov ah,
+mov ah,' '
 monurcanre:  
   int 21h
   dec cx
 mordde:  
   jnz more
   int 20h
+dat1 dw 6568h
+  dat2 dw 0011000000111001b  
+ 
+  var1 dw 0113h
+  greater db '>'
+lower db '<'   
+empty db ' ' 
+var1 db 0
+first_el db 10d 
+
+
+  
 code ends 
 
 
-
+ dat2 dw 'dd' // ??
 

@@ -52,9 +52,13 @@ unsigned char *pcl = (unsigned char *)&cx;
 unsigned char *pdh = (unsigned char *)(((unsigned char *)&dx) + 1);
 unsigned char *pdl = (unsigned char *)&dx;
 
-map<string, int> mymap;
+map<string, int> labels;
 
 vector<string> commands;
+
+map<string, pair<string, int>> variables; // myvar,type,memory ref, myvar,db/dw,65456 index
+
+int variablestartpoint = 0; // it should be updated wrt sayac, until int20h
 
 // functions
 void strip(string &str);
@@ -62,6 +66,8 @@ void lowerCase(string &str);
 
 bool mov(string a, string b);
 bool add(string a, string b);
+
+int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
 int main(int argc, char *argv[])
 {
@@ -86,6 +92,8 @@ int main(int argc, char *argv[])
    }
    string line;
    int sayac = -1;
+   bool vardefstart = false;
+
    while (getline(file, line, '\n'))
    {
       strip(line); // get rid of return carriage
@@ -112,6 +120,47 @@ int main(int argc, char *argv[])
          break;
       }
 
+      if (line.find("int 20h") != string::npos)
+      {
+         // cout << "bitti" << line.find("code ends") << endl;
+         variablestartpoint = 6 * (sayac + 2); // +2 due to own and next empty index of array
+         vardefstart = true;
+         continue;
+      }
+
+      // Variable parser
+      if (vardefstart == true)
+      {
+         cout << "var:" << line << endl;
+         stringstream ls(line);     //linestream
+         string varname, type, val; // name and dw or db
+         // char value;
+         ls >> varname >> type;
+         getline(ls, val);
+         strip(val);
+         int asd = tointeger(val);
+         if (type == "db")
+         {
+            memory[variablestartpoint] = asd;
+            cout << "dd " << asd << "  -- " << (0 + memory[variablestartpoint]) << endl;
+         }
+         else if (type == "dw")
+         {  // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo 
+            memory[variablestartpoint] = asd;
+            memory[variablestartpoint+1] = asd>>8; // get upper via shift 8 bit right
+            cout << "dd " << asd << "  -- " << (0 + memory[variablestartpoint])<<
+             "  -- " << (0 + memory[variablestartpoint+1]) << endl;
+         }
+         else
+         {
+            cout << "Error, wrong variable type" << endl;
+            return 0; // break program, error
+            break;
+         }
+
+         continue;
+      }
+
       stringstream ss(line); // MOV AX,[ 0abcdh ]
       string ins;
       ss >> ins; // MOV
@@ -119,7 +168,7 @@ int main(int argc, char *argv[])
       string delimiter = ":";
       if (ins[ins.length() - 1] == ':')
       {
-         if (mymap.count(ins))
+         if (labels.count(ins))
          {
             cerr << "Error occur when reading file" << endl;
             cerr << "Duplicated Label ! at\n"
@@ -127,7 +176,7 @@ int main(int argc, char *argv[])
             return 0;
          }
          // cout << "label buldum "<< endl;
-         mymap[ins] = sayac;
+         labels[ins] = sayac;
       }
       else
       {
@@ -169,10 +218,10 @@ int main(int argc, char *argv[])
       cout << "[" << i << "] " << commands[i] << endl;
    }
 
-   map<string, int>::iterator it = mymap.begin();
+   map<string, int>::iterator it = labels.begin();
 
    cout << "Labels:\n";
-   for (it = mymap.begin(); it != mymap.end(); ++it)
+   for (it = labels.begin(); it != labels.end(); ++it)
       cout << it->first << " => " << it->second << '\n';
    cout << endl
         << "Program starts execution" << endl;
@@ -200,7 +249,7 @@ int main(int argc, char *argv[])
 
          if (ins == "mov")
          {
-            mov(first, second);
+            mov(first, second); // ax  ,bx    ax,01h
             break;
          }
          // else if(ins=="add"){
@@ -342,7 +391,6 @@ int main(int argc, char *argv[])
    //     }
    //
    // }
-
    print_16bitregs();
    // print_hex(*pah);
    // print_hex(*pal);
@@ -426,7 +474,48 @@ void lowerCase(string &str)
 {
    for (int i = 0; i < str.length(); i++)
    {
-      str[i]=tolower(str[i]);
+      str[i] = tolower(str[i]);
+   }
+}
+int tointeger(string str)
+{
+
+   strip(str);
+   // // IMPLEMENT      !!! TODO
+   // if (str[0] == '0')
+   // { // like hex
+   //    //  01h 01 01d 01fh 01fdh
+   //    if (str.length() ==)
+
+   // }
+   // else
+   if (str[str.length() - 1] == 'h')
+   { // hex
+      return stoi(str.substr(0, str.length() - 1), nullptr, 16);
+   }
+   else if (str[str.length() - 1] == 'd')
+   { //digit
+      return stoi(str.substr(0, str.length() - 1), nullptr, 10);
+   }
+   else if (str[str.length() - 1] == 'b')
+   { //binary , olmayacakmış
+
+      return stoi(str.substr(0, str.length() - 1), nullptr, 2);
+   }
+   else if ((str[str.length() - 1] == 34 && str[0] == 34) || (str[str.length() - 1] == 39 && str[0] == 39))
+   {  //34 "  ,39 '
+      string val = str.substr(1, str.length() - 2); // if val= "as"
+      int ans=0;                                      // = a*256 +s
+      for (int i = 0; i < val.length(); i++)
+      {
+         ans *= 256;
+         ans += val[i];
+      }
+      return ans;
+   }
+   else
+   {
+      return stoi(str);
    }
 }
 
@@ -451,15 +540,55 @@ map<string, unsigned char *> converter8bit = {
 
 };
 
+// bitOf(string x){
+
+//    calculate bit
+
+// }
+
+
+// typeOF(string x){
+
+// reg
+// offset
+// value  b w 
+// memory
+// immediate
+
+
+
+// }
+
+// valueof(string b){
+
+//    b hesapla dön
+
+
+
+// }
+
+
 // Instruction functions
 bool mov(string a, string b) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
 {
-   cout << a <<"<-"<< b << endl;
-
+   int valb = getvalue(b);
+   cout<<"sayi:"<<converter16bit.count("ax")<<endl;
+   cout<<"sayi:"<<converter16bit.count("konu")<<endl;
+   cout << a << "<-" << b << endl;
+   a="ax";
    // (*(converter[b])) = (*(converter[a]));
-      print_hex(*(converter16bit[a]));
-      print_hex(*(converter8bit[b]));
+   *(converter16bit[a])  =  55;
+   print_hex(*(converter16bit[a]));
+   // print_hex(*(converter8bit[b]));
 
+
+   cout<<"a: "<< a <<endl;
+   cout<<"b: "<< b <<endl;
+
+
+
+   // if(a[a.length()-1] == 'x' && b[b.length()-1] == 'x')
+   
    return true;
 }
 
