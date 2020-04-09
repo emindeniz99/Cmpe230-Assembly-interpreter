@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
             variablestartpoint++;
          }
          else if (type == "dw")
-         { // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
+         {  // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
             memory[variablestartpoint] = asd;
             memory[variablestartpoint + 1] = asd >> 8; // get upper via shift 8 bit right
 
@@ -617,6 +617,7 @@ else if (variables.count(temp)){
       return tointeger(operand) > (2 << 8) ? 16 : 8; // i am not sure about immediate values
    }
 
+
    // reg
    // offset
    // value  b w
@@ -781,5 +782,105 @@ cout<<"value - bit - type"<<endl<<getValue(a)<<" "<< bitnumberof(a) <<"  "<< typ
 
 
 
+bool cmp(indexOfcmp){
+    // if a=b
+}
+
+//If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
+
+
+//Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
+
+//JE     //signed and unsigned      //Jump equal
+void je(string a, indexOfje){
+    if(zf == true){                       //Check ZF Flag
+        return
+    }
+}
+    
+//JZ      //signed and unsigned      //Jump zero
+void jz(string a, indexOfje){
+    if(zf == true){                       //Check ZF Flag
+        return
+    }
+}
+//JNE       //signed and unsigned        //Jump not equal
+void jne(string a, indexOfje){
+    if(zf == false){                       //Check ZF Flag
+        return
+    }
+}
+//JNZ       //signed and unsigned        //Jump not zero
+void jnz(string a, indexOfje){
+    if(zf == false){                       //Check ZF Flag
+        return
+    }
+}
+
+//Following are the conditional jump instructions used on unsigned data used for logical operations − (Unsigned)
+
+//JA        //unsigned data used        //Jump Above
+void ja(string a, indexOfje){
+    if(cf == true && zf == true){                       //Check CF AND ZF Flag
+        return
+    }
+}
+//JNBE      //unsigned data used        //Jump Not Below/Equal
+void jnbe(string a, indexOfje){
+    if(cf == false && zf == false){                       //Check CF AND ZF Flag
+        return
+    }
+}
+//JAE                                   //Jump Above/Equal
+void jae(string a, indexOfje){
+    if(cf == true){                       //Check CF Flag
+        return
+    }
+}
+//JNB      //unsigned data used         //Jump Not Below
+void jnb(string a, indexOfje){
+    if(cf == false){                       //Check CF Flag
+        return
+    }
+}
+
+//JB        //unsigned data used        //Jump Below
+void jb(string a, indexOfje){
+    if(cf == true){                       //Check CF Flag
+        return
+    }
+}
+//JNAE      //unsigned data used        //Jump Not Above/Equal
+void jnae(string a, indexOfje){
+    if(cf == false){                       //Check CF Flag
+        return
+    }
+}
+
+//JBE        //unsigned data used        //Jump Below/Equa
+void jbe(string a, indexOfje){
+    if(cf == true){                       //Check CF Flag
+        return
+    }
+}
+
+
+//The following conditional jump instructions have special uses and check the value of flags
+
+//JC      //special      //Jump if carry
+void jc(string a, indexOfje){
+    if(cf == true){                       //Check CF Flag
+        return
+    }
+}
+//JNC       //special       //Jump if no carry
+void jnc(string a, indexOfje){
+    if(cf == false ){                       //Check CF Flag
+        return
+    }
+}
+
+
    // NOTES
    // dont confuse 1<<8 and 2<<8 
+
