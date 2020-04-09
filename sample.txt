@@ -10,9 +10,10 @@ more:
   mov ah,2h  
   mov al,21h
   mov b[   bx   ] ,    "$"
-  mov w[bx] , b'c'
   mov ah,09
-  mov bx ,   offset     number+4
+  mov bx ,   ofFset     number
+    mov bx ,w[   ofFset     number]
+
 mov bx,0DEFAh
 topla cx, dx // print error
     mov w   [1234d], 0A103h
@@ -42,10 +43,7 @@ and al,b[si]
 xor ax,ax
     nop
 
-MSG DB "Hello World.$" ; A string variable with a value.
-MOV DX, OFFSET MSG ; DX points to (holds the address of) the string
 
-mov ah,
 mov ah,' '
 monurcanre:  
   int 21h
@@ -60,13 +58,20 @@ dat1 dw 6568h
   greater db '>'
 lower db '<'   
 empty db ' ' 
-var1 db 0
+var23 db 0
 first_el db 10d 
-
+number dw 300
 
   
 code ends 
+mov ah,
+
+  mov bx ,   ofFset     number+4
+mov w[bx] , b'c'   // bunu eklemeyi unutma önemli !!
+
 
 
  dat2 dw 'dd' // ??
 
+MSG DB "Hello World.$" ; A string variable with a value.
+MOV DX, OFFSET MSG ; DX points to (holds the address of) the string
