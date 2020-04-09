@@ -9,6 +9,10 @@ more:
   mov    dl   ,   al
   mov ah,2h  
   mov al,21h
+  mov al,25551h
+  mov bx,306
+  mov w[   bx   ] ,    ax
+  mov b[   bx   ] ,    300
   mov b[   bx   ] ,    "$"
   mov ah,09
   mov bx ,   ofFset     number
@@ -16,6 +20,7 @@ more:
 
 mov bx,0DEFAh
 topla cx, dx // print error
+mov w   [306d], 0A116h
     mov w   [1234d], 0A103h
     mov b[1246d], 10d
     add dl,    '0'
@@ -36,6 +41,7 @@ topla cx, dx // print error
    mov ah, 02h
    mov dl, lower
    int 21h
+   mov ax,55
    mov w[si],bx
 mov cx,202h
 or al,bl
@@ -75,3 +81,6 @@ mov w[bx] , b'c'   // bunu eklemeyi unutma önemli !!
 
 MSG DB "Hello World.$" ; A string variable with a value.
 MOV DX, OFFSET MSG ; DX points to (holds the address of) the string
+
+
+
