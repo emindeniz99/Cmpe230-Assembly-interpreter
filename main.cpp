@@ -300,30 +300,30 @@ int main(int argc, char *argv[])
          // else if(ins=="div"){
          //    div(first,second);
          // }
-         // else if(ins=="xor"){
-         //    xor(first,second);
-         // }
-         // else if(ins=="or"){
-         //    or(first,second);
-         // }
-         // else if(ins=="and"){
-         //    add(first,second);
-         // }
-         // else if(ins=="not"){
-         //    not(first,second);
-         // }
+          else if(ins=="xor"){
+             _xor(first,second);
+          }
+          else if(ins=="or"){
+             _or(first,second);
+          }
+          else if(ins=="and"){
+             _and(first,second);
+          }
+          else if(ins=="not"){
+             _not(first);
+          }
          // else if(ins=="rcl"){
          //    rcl(first,second);
          // }
          // else if(ins=="rcr"){
          //    rcr(first,second);
          // }
-         // else if(ins=="shl"){
-         //    shl(first,second);
-         // }
-         // else if(ins=="shr"){
-         //    shr(first,second);
-         // }
+          else if(ins=="shl"){
+             shl(first,second);
+          }
+          else if(ins=="shr"){
+             shr(first,second);
+          }
          // else if(ins=="push"){
          //    push(first,second);
          // }
@@ -333,48 +333,48 @@ int main(int argc, char *argv[])
          // else if(ins=="nop"){
          //    nop(first,second);
          // }
-         // else if(ins=="cmp"){
-         //    cmp(first,second);
-         // }
-         // else if(ins=="jz"){
-         //    jz(first,second);
-         // }
-         // else if(ins=="jnz"){
-         //    jnz(first,second);
-         // }
-         // else if(ins=="je"){
-         //    je(first,second);
-         // }
-         // else if(ins=="jne"){
-         //    jne(first,second);
-         // }
-         // else if(ins=="ja"){
-         //    ja(first,second);
-         // }
-         // else if(ins=="jae"){
-         //    jae(first,second);
-         // }
-         // else if(ins=="jb"){
-         //    jb(first,second);
-         // }
-         // else if(ins=="jbe"){
-         //    jbe(first,second);
-         // }
-         // else if(ins=="jnae"){
-         //    jnae(first,second);
-         // }
-         // else if(ins=="jnb"){
-         //    jnb(first,second);
-         // }
-         // else if(ins=="jnbe"){
-         //    jnbe(first,second);
-         // }
-         // else if(ins=="jnc"){
-         //    jnc(first,second);
-         // }
-         // else if(ins=="jc"){
-         //    jc(first,second);
-         // }
+          else if(ins=="cmp"){
+             cmp(first);
+          }
+          else if(ins=="jz"){
+             jz(first);
+          }
+          else if(ins=="jnz"){
+             jnz(first);
+          }
+          else if(ins=="je"){
+             je(first);
+          }
+          else if(ins=="jne"){
+             jne(first);
+          }
+          else if(ins=="ja"){
+             ja(first);
+          }
+          else if(ins=="jae"){
+             jae(first);
+          }
+          else if(ins=="jb"){
+             jb(first);
+          }
+          else if(ins=="jbe"){
+             jbe(first);
+          }
+          else if(ins=="jnae"){
+             jnae(first);
+          }
+          else if(ins=="jnb"){
+             jnb(first);
+          }
+          else if(ins=="jnbe"){
+             jnbe(first);
+          }
+          else if(ins=="jnc"){
+             jnc(first);
+          }
+          else if(ins=="jc"){
+             jc(first);
+          }
          // else if(ins=="push"){
          //    push(first,second);
          // }
@@ -779,11 +779,80 @@ cout<<"value - bit - type"<<endl<<getValue(a)<<" "<< bitnumberof(a) <<"  "<< typ
    // bool add(string a, string b)
    // {
    // }
+bool _and(string a, string b){
+   if(typeofoperand(a) == "value" || typeofoperand(b) == "value"){
+      getValue(a) & getValue(b);
+   }
+   else{
+      if(bitnumberof(a) == bitnumberof(b)){
+         getValue(a) & getValue(b);
+      }
+   }
+   return true;
+}
+bool _or(string a, string b){
+   if(typeofoperand(a) == "value" || typeofoperand(b) == "value"){
+      getValue(a) | getValue(b);
+   }
+   else{
+      if(bitnumberof(a) == bitnumberof(b)){
+         getValue(a) | getValue(b);
+      }
+   }
+   return true;
+}
+bool _xor(string a, string b){
+   if(typeofoperand(a) == "value" || typeofoperand(b) == "value"){
+      getValue(a) ^ getValue(b);
+   }
+   else{
+      if(bitnumberof(a) == bitnumberof(b)){
+         getValue(a) ^ getValue(b);
+      }
+   }
+   return true;
+}
+bool _not(string a){
+      ~ getValue(a);
+   return true;
+}
+bool shl(string a, string b){
+   getValue(a) << getValue(b);
+   return true;
+}
+bool shr(string a, string b){
+   getValue(a) >> getValue(b);
+   return true;
+}
 
-
-
-bool cmp(indexOfcmp){
-    // if a=b
+bool cmp(string a, string b){
+   if(typeofoperand(a) == "value" || typeofoperand(b) == "value"){
+      if(getValue(a) == getValue(b)){
+         zf = true;
+         cf = false;
+      }else if(getValue(a)<getValue(b)){
+         zf = false;
+         cf = true;
+      }else if(getValue(a)>getValue(b)){
+         zf = false;
+         cf = false;
+      }
+   }
+   else{
+      if(bitnumberof(a) == bitnumberof(b)){
+         if(getValue(a) == getValue(b)){
+            zf = true;
+            cf = false;
+         }else if(getValue(a)<getValue(b)){
+            zf = false;
+            cf = true;
+         }else if(getValue(a)>getValue(b)){
+            zf = false;
+            cf = false;
+         }
+      }
+   }
+   return true;
 }
 
 //If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
@@ -792,75 +861,77 @@ bool cmp(indexOfcmp){
 //Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
 
 //JE     //signed and unsigned      //Jump equal
-void je(string a, indexOfje){
+void je(string a){
     if(zf == true){                       //Check ZF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
     
 //JZ      //signed and unsigned      //Jump zero
-void jz(string a, indexOfje){
+void jz(string a){
     if(zf == true){                       //Check ZF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 //JNE       //signed and unsigned        //Jump not equal
-void jne(string a, indexOfje){
+void jne(string a){
     if(zf == false){                       //Check ZF Flag
-        return
+      PC=labels[strip(a)] -1 ;
+
     }
 }
 //JNZ       //signed and unsigned        //Jump not zero
-void jnz(string a, indexOfje){
+void jnz(string a){
     if(zf == false){                       //Check ZF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 
 //Following are the conditional jump instructions used on unsigned data used for logical operations − (Unsigned)
 
 //JA        //unsigned data used        //Jump Above
-void ja(string a, indexOfje){
+void ja(string a){
     if(cf == true && zf == true){                       //Check CF AND ZF Flag
-        return
+      PC=labels[strip(a)] -1 ;
+
     }
 }
 //JNBE      //unsigned data used        //Jump Not Below/Equal
-void jnbe(string a, indexOfje){
+void jnbe(string a){
     if(cf == false && zf == false){                       //Check CF AND ZF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 //JAE                                   //Jump Above/Equal
-void jae(string a, indexOfje){
+void jae(string a){
     if(cf == true){                       //Check CF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 //JNB      //unsigned data used         //Jump Not Below
-void jnb(string a, indexOfje){
+void jnb(string a){
     if(cf == false){                       //Check CF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 
 //JB        //unsigned data used        //Jump Below
-void jb(string a, indexOfje){
+void jb(string a){
     if(cf == true){                       //Check CF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 //JNAE      //unsigned data used        //Jump Not Above/Equal
-void jnae(string a, indexOfje){
+void jnae(string a){
     if(cf == false){                       //Check CF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 
 //JBE        //unsigned data used        //Jump Below/Equa
-void jbe(string a, indexOfje){
+void jbe(string a){
     if(cf == true){                       //Check CF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 
@@ -868,15 +939,15 @@ void jbe(string a, indexOfje){
 //The following conditional jump instructions have special uses and check the value of flags
 
 //JC      //special      //Jump if carry
-void jc(string a, indexOfje){
+void jc(string a){
     if(cf == true){                       //Check CF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 //JNC       //special       //Jump if no carry
-void jnc(string a, indexOfje){
+void jnc(string a){
     if(cf == false ){                       //Check CF Flag
-        return
+      PC=labels[strip(a)] -1 ;
     }
 }
 
