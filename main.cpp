@@ -42,6 +42,11 @@ unsigned short *pax = &ax;
 unsigned short *pbx = &bx;
 unsigned short *pcx = &cx;
 unsigned short *pdx = &dx;
+unsigned short *pdi = &di;
+unsigned short *psi = &si;
+unsigned short *psp = &sp;
+unsigned short *pbp = &bp;
+
 // note that x86 uses little endian, that is, least significat byte is stored in lowest byte
 unsigned char *pah = (unsigned char *)(((unsigned char *)&ax) + 1);
 unsigned char *pal = (unsigned char *)&ax;
@@ -131,7 +136,7 @@ int main(int argc, char *argv[])
       // Variable parser
       if (vardefstart == true)
       {
-         cout << "var:" << line << endl;
+         // cout << "var:" << line << endl;
          stringstream ls(line);     //linestream
          string varname, type, val; // name and dw or db
          // char value;
@@ -139,17 +144,33 @@ int main(int argc, char *argv[])
          getline(ls, val);
          strip(val);
          int asd = tointeger(val);
+
+         if (variables.count(varname) > 0)
+         {
+            cout << "duplicated var name" << endl;
+            exit(1);
+         }
+
+         // cout << "VariableAdress: (int)" << asd << endl;
          if (type == "db")
          {
             memory[variablestartpoint] = asd;
-            cout << "dd " << asd << "  -- " << (0 + memory[variablestartpoint]) << endl;
+
+            variables[varname] = make_pair("db", variablestartpoint);
+
+            // cout << "memo[" << variablestartpoint << "] = " << (0 + memory[variablestartpoint]) << endl;
+            variablestartpoint++;
          }
          else if (type == "dw")
          {  // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
             memory[variablestartpoint] = asd;
-            memory[variablestartpoint+1] = asd>>8; // get upper via shift 8 bit right
-            cout << "dd " << asd << "  -- " << (0 + memory[variablestartpoint])<<
-             "  -- " << (0 + memory[variablestartpoint+1]) << endl;
+            memory[variablestartpoint + 1] = asd >> 8; // get upper via shift 8 bit right
+
+            variables[varname] = make_pair("dw", variablestartpoint);
+
+            // cout << "memo[" << variablestartpoint << "] = " << (0 + memory[variablestartpoint]) << endl;
+            // cout << "memo[" << variablestartpoint + 1 << "] = " << (0 + memory[variablestartpoint + 1]) << endl;
+            variablestartpoint += 2;
          }
          else
          {
@@ -213,18 +234,27 @@ int main(int argc, char *argv[])
       // }
    }
 
+   // print instructions
    for (int i = 0; i < commands.size(); i++)
    {
       cout << "[" << i << "] " << commands[i] << endl;
    }
 
-   map<string, int>::iterator it = labels.begin();
+   map<string, int>::iterator it;
 
-   cout << "Labels:\n";
+   cout << endl
+        << "Labels:\n";
    for (it = labels.begin(); it != labels.end(); ++it)
       cout << it->first << " => " << it->second << '\n';
-   cout << endl
-        << "Program starts execution" << endl;
+   cout << endl;
+
+   map<string, pair<string, int>>::iterator it2;
+   cout << "Variables:\n";
+   for (it2 = variables.begin(); it2 != variables.end(); ++it2)
+      cout << it2->first << " => " << it2->second.first << " [" << it2->second.second << "]" << '\n';
+   cout << endl;
+
+   cout << "Program starts execution" << endl;
    while (PC != commands.size())
    {
 
@@ -241,8 +271,8 @@ int main(int argc, char *argv[])
          string first;
          string second;
          getline(iss, first, ',');
-         // getline(iss, second,',');
-         iss >> second;
+         getline(iss, second,',');
+         // iss >> second;
          strip(first);
          strip(second);
          cout << "Ins: " << ins << " Dest: " << first << " Src: " << second << endl;
@@ -250,7 +280,7 @@ int main(int argc, char *argv[])
          if (ins == "mov")
          {
             mov(first, second); // ax  ,bx    ax,01h
-            break;
+            // break;
          }
          // else if(ins=="add"){
          // add(first,second);
@@ -391,7 +421,13 @@ int main(int argc, char *argv[])
    //     }
    //
    // }
+   cout<<endl<<"registers:"<<endl;
    print_16bitregs();
+
+   cout<<endl<<"memo:"<<endl;
+   for(int i=6*(sayac+2);i<variablestartpoint;i++){
+      cout<<"memo["<<i<<"] : "<<0+memory[i]<<endl;
+   }
    // print_hex(*pah);
    // print_hex(*pal);
 }
@@ -503,9 +539,9 @@ int tointeger(string str)
       return stoi(str.substr(0, str.length() - 1), nullptr, 2);
    }
    else if ((str[str.length() - 1] == 34 && str[0] == 34) || (str[str.length() - 1] == 39 && str[0] == 39))
-   {  //34 "  ,39 '
+   {                                                //34 "  ,39 '
       string val = str.substr(1, str.length() - 2); // if val= "as"
-      int ans=0;                                      // = a*256 +s
+      int ans = 0;                                  // = a*256 +s
       for (int i = 0; i < val.length(); i++)
       {
          ans *= 256;
@@ -524,8 +560,11 @@ map<string, unsigned short *> converter16bit = {
     {"ax", pax},
     {"bx", pbx},
     {"cx", pcx},
-    {"dx", pdx}
-
+    {"dx", pdx},
+    {"di", pdi},
+    {"si", psi},
+    {"sp", psp},
+    {"bp", pbp},
 };
 
 map<string, unsigned char *> converter8bit = {
@@ -536,61 +575,210 @@ map<string, unsigned char *> converter8bit = {
     {"cl", pcl},
     {"ch", pch},
     {"dl", pdl},
-    {"dh", pdh}
+    {"dh", pdh}};
 
-};
-
-// bitOf(string x){
-
-//    calculate bit
-
-// }
-
-
-// typeOF(string x){
-
-// reg
-// offset
-// value  b w
-// memory
-// immediate
-
-
-
-// }
-
-// valueof(string b){
-
-//    b hesapla dön
-
-
-
-// }
-
-
-// Instruction functions
-bool mov(string a, string b) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
+int bitnumberof(string operand)
 {
-   int valb = getvalue(b);
-   cout<<"sayi:"<<converter16bit.count("ax")<<endl;
-   cout<<"sayi:"<<converter16bit.count("konu")<<endl;
-   cout << a << "<-" << b << endl;
-   a="ax";
-   // (*(converter[b])) = (*(converter[a]));
-   *(converter16bit[a])  =  55;
-   print_hex(*(converter16bit[a]));
-   // print_hex(*(converter8bit[b]));
-
-
-   cout<<"a: "<< a <<endl;
-   cout<<"b: "<< b <<endl;
-
-
-
-   // if(a[a.length()-1] == 'x' && b[b.length()-1] == 'x')
-   
-   return true;
+   strip(operand);
+   string temp = operand;
+   lowerCase(temp); // w [ 1235h ]
+   string bwsiztemp = temp.substr(1, temp.length() - 1);
+   strip(bwsiztemp); // [ 1325h ]
+   if (converter16bit.count(temp))
+   {
+      return 16;
+   }
+   else if (converter8bit.count(temp))
+   {
+      return 8;
+   }
+   else if (temp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      return 8;
+   }
+   else if (temp[0] == 'b' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      return 8;
+   }
+   else if (temp[0] == 'w' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      return 16;
+   }
+   else if (temp.find("offset") == 0)
+   {
+      return 16;
+   }
+else if (variables.count(temp)){
+   return variables[temp].first=="db"?8:16;
 }
+   else
+   //   if(  )   TODO add imme,offst,...
+   {
+      return tointeger(operand) > (2 << 8) ? 16 : 8; // i am not sure about immediate values
+   }
+
+
+   // reg
+   // offset
+   // value  b w
+   // memory
+   // immediate
+   // variable
+}
+
+string typeofoperand(string operand)
+{
+   strip(operand);
+   string temp = operand;
+   lowerCase(temp); // w [ 1235h ]
+   string bwsiztemp = temp.substr(1, temp.length() - 1);
+   strip(bwsiztemp); // [ 1325h ]
+   if (converter16bit.count(temp) || converter8bit.count(temp))
+   {
+      return "reg";
+   }
+   else if (temp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      return "memory";
+   }
+   else if (temp[0] == 'b' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      return "memory";
+   }
+   else if (temp[0] == 'w' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      return "memory";
+   }
+   // else if(temp.find("offset")!=string::npos){
+   //    return   "offset";
+   // }
+   else if (temp.find("offset") == 0)
+   {
+      return "offset";
+   }
+else if (variables.count(temp)){
+   return variables[temp].first;
+}
+   //   if(  )   TODO add imme,offst,...
+   else
+   {
+      return "value";
+   }
+
+   // reg
+   // offset
+   // value  b w
+   // memory
+   // immediate
+}
+
+//returns integer value of operand, usally used for right operand
+int getValue(string operand)
+{
+   strip(operand);                                       // operand is pure version of input
+   string temp = operand;                                // temp is lower cased version
+   lowerCase(temp);                                      // w [ 1235h ]
+   string bwsiztemp = temp.substr(1, temp.length() - 1); // bwsiz is cutted first char to look b,w
+   strip(bwsiztemp);                                     // [ 1325h ]
+   if (converter16bit.count(temp))
+   {
+      return *(converter16bit[temp]);
+   }
+   else if (converter8bit.count(temp))
+   {
+      return *(converter8bit[temp]);
+   }
+   else if (temp[0] == '[' && temp[temp.length() - 1] == ']') // bu da bir alttakiyle aynı sanırım
+   {
+      string innerstr=temp.substr(1,temp.length()-2);
+      strip(innerstr);
+      int inval= getValue(innerstr);
+      return  memory[inval];
+   }
+   else if (temp[0] == 'b' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      string innerstr=bwsiztemp.substr(1,bwsiztemp.length()-2);
+      strip(innerstr);
+      int inval= getValue(innerstr);
+      return memory[inval];
+   }
+   else if (temp[0] == 'w' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      string innerstr=bwsiztemp.substr(1,bwsiztemp.length()-2);
+      strip(innerstr);
+      int inval= getValue(innerstr);
+      cout<<"debug: "<<memory[inval+1]*(1<<8) << "   "<<0+ memory[inval]<<endl;
+      return memory[inval+1]*(1<<8)+ memory[inval];
+      
+   }
+   else if (temp.find("offset") == 0)
+   {
+      string tt=operand.substr(6,temp.length()-6);  // use operand due to variable can be UPPERCASE
+      strip(tt);
+      return variables[tt].second;
+   }
+   else if (variables.count(temp))
+   {
+      if (variables[temp].first == "dw")
+      {
+         return memory[variables[temp].second] ;
+      }
+      else if (variables[temp].first == "db")
+      {
+         return memory[variables[temp].second+1]*(1<<8)+ memory[variables[temp].second] ;
+      }
+      else
+      {
+         cout << "Error !! ??";
+         exit(1);
+      }
+   }
+
+   else
+   //   if(  )   TODO add imme,offst,...
+   {
+      return tointeger(operand) ; // i am not sure about immediate values
+   }
+}
+   // reg
+   // offset
+   // value  b w
+   // memory
+   // immediate
+   // variable
+
+   //    b hesapla dön
+
+   // }
+
+   // Instruction functions
+   bool mov(string a, string b) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
+   {
+      int valb = getValue(b);
+      // cout << "sayi:" << converter16bit.count("ax") << endl;
+      // cout << "sayi:" << converter16bit.count("konu") << endl;
+      cout <<endl<< a << "<-" << b << endl;
+      // a = "ax";
+      // (*(converter16bit[b])) = (*(converter16bit[a]));
+      // *(converter16bit[a]) = 55;
+      // print_hex(*(converter16bit[a]));
+      // print_hex(*(converter8bit[b]));
+
+cout<<"value - bit - type"<<endl<<getValue(a)<<" "<< bitnumberof(a) <<"  "<< typeofoperand(a) <<endl
+<<getValue(b)<<"   "<< bitnumberof(b) <<"  "<< typeofoperand(b) <<endl;
+
+
+      // cout << "a: " << a << endl;
+      // cout << "b: " << b << endl;
+
+      // if(a[a.length()-1] == 'x' && b[b.length()-1] == 'x')
+
+      return true;
+   }
+
+   // bool add(string a, string b)
+   // {
+   // }
 
 
 
@@ -691,4 +879,8 @@ void jnc(string a, indexOfje){
         return
     }
 }
+
+
+   // NOTES
+   // dont confuse 1<<8 and 2<<8 
 
