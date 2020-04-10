@@ -95,6 +95,8 @@ bool _or(string a, string b);
 bool _and(string a, string b);
 bool push(string operand);
 bool pop(string operand);
+bool rcr(string a, string b);
+bool rcl(string a, string b);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
@@ -338,36 +340,34 @@ int main(int argc, char *argv[])
          // else if(ins=="div"){
          //    div(first,second);
          // }
-         // else if (ins == "xor")
-         // {
-         //    _xor(first, second);
-         // }
-         // else if (ins == "or")
-         // {
-         //    _or(first, second);
-         // }
-         // else if (ins == "and")
-         // {
-         //    _and(first, second);
-         // }
-         // else if (ins == "not")
-         // {
-         //    _not(first);
-         // }
-         // else if(ins=="rcl"){
-         //    rcl(first,second);
-         // }
-         // else if(ins=="rcr"){
-         //    rcr(first,second);
-         // }
-         // else if (ins == "shl")
-         // {
-         //    shl(first, second);
-         // }
-         // else if (ins == "shr")
-         // {
-         //    shr(first, second);
-         // }
+         else if (ins == "xor")
+         {
+            _xor(first, second);
+         }
+         else if (ins == "or")
+         {
+            _or(first, second);
+         }
+         else if (ins == "and")
+         {
+            _and(first, second);
+         }
+         else if (ins == "rcl")
+         {
+            rcl(first, second);
+         }
+         else if (ins == "rcr")
+         {
+            rcr(first, second);
+         }
+         else if (ins == "shl")
+         {
+            shl(first, second);
+         }
+         else if (ins == "shr")
+         {
+            shr(first, second);
+         }
          // else if(ins=="int20h"){
          //    int20h(first,second);
          // }
@@ -442,7 +442,11 @@ int main(int argc, char *argv[])
          }
          else if (ins == "nop")
          {
-            cout<<"NOP - continue"<<endl;
+            cout << "NOP - continue" << endl;
+         }
+         else if (ins == "not")
+         {
+            _not(first);
          }
       }
 
@@ -1113,12 +1117,14 @@ bool _not(string a)
 }
 bool shl(string a, string b)
 {
-   getValue(a) << getValue(b);
+   int temp = getValue(a) << getValue(b);
+   mov(a, to_string(temp));
    return true;
 }
 bool shr(string a, string b)
 {
-   getValue(a) >> getValue(b);
+   int temp = getValue(a) >> getValue(b);
+   mov(a, to_string(temp));
    return true;
 }
 
@@ -1281,4 +1287,73 @@ void jnc(string a)
    { //Check CF Flag
       PC = labels[strip(a)] - 1;
    }
+}
+
+bool rcl(string a, string b)
+{
+   int value = getValue(a);
+   int lengthOfArr = bitnumberof(a);
+   int binaryArr[lengthOfArr - 1];
+   for (int i = 0; value > 0; i++)
+   {
+      binaryArr[i] = value % 2;
+      value = value / 2;
+   }
+   for (int i = 0; i < lengthOfArr - 1; i++)
+   {
+      int temp = binaryArr[i + 1];
+      binaryArr[i + 1] = binaryArr[i];
+      binaryArr[i] = temp;
+   }
+   int total = 0;
+   int i = 0;
+   if (i == 0)
+   {
+      total = binaryArr[0] * 2;
+      i++;
+   }
+   for (i = 1; i < lengthOfArr; i++)
+   {
+      int two = 1;
+      for (int j = 0; j < i; j++)
+      {
+         two = 2 * two;
+      }
+      total += binaryArr[i] * two;
+   }
+   mov(a, to_string(total));
+}
+bool rcr(string a, string b)
+{
+   int value = getValue(a);
+   int lengthOfArr = bitnumberof(a);
+   int binaryArr[lengthOfArr - 1];
+   for (int i = 0; value > 0; i++)
+   {
+      binaryArr[i] = value % 2;
+      value = value / 2;
+   }
+   for (int i = 0; i < lengthOfArr - 1; i++)
+   {
+      int temp = binaryArr[i];
+      binaryArr[i] = binaryArr[i + 1];
+      binaryArr[i + 1] = temp;
+   }
+   int total = 0;
+   int i = 0;
+   if (i == 0)
+   {
+      total = binaryArr[0] * 2;
+      i++;
+   }
+   for (i = 1; i < lengthOfArr; i++)
+   {
+      int two = 1;
+      for (int j = 0; j < i; j++)
+      {
+         two = 2 * two;
+      }
+      total += binaryArr[i] * two;
+   }
+   mov(a, to_string(total));
 }
