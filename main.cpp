@@ -13,7 +13,9 @@ void print_hex(datatype x);
 template <class regtype>
 void mov_reg_reg(regtype *preg1, regtype *preg2);
 void print_16bitregs();
-
+void printflags();
+void printmemo();
+void printStack();
 // short 16 bit
 // char 8 bit
 
@@ -71,6 +73,28 @@ void lowerCase(string &str);
 
 bool mov(string a, string b);
 bool add(string a, string b);
+void jnc(string a);
+void jc(string a);
+void jbe(string a);
+void jnae(string a);
+void jb(string a);
+void jnb(string a);
+void jae(string a);
+void jnbe(string a);
+void ja(string a);
+void jnz(string a);
+void jne(string a);
+void jz(string a);
+void je(string a);
+bool cmp(string a, string b);
+bool shr(string a, string b);
+bool shl(string a, string b);
+bool _not(string a);
+bool _xor(string a, string b);
+bool _or(string a, string b);
+bool _and(string a, string b);
+bool push(string operand);
+bool pop(string operand);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
@@ -78,11 +102,10 @@ int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 void error(string errormsg)
 {
    cout << "ERROR: " << errormsg << endl;
-   // exit(1);   // comment it to avoid from stopping program
+   //  exit(1);   // comment it to avoid from stopping program
 }
 
 int sayac = -1; // !
-void printmemo();
 int main(int argc, char *argv[])
 {
    // *pax = 1;
@@ -171,8 +194,8 @@ int main(int argc, char *argv[])
             variablestartpoint++;
          }
          else if (type == "dw")
-         { // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
-            memory[variablestartpoint] = asd;
+         {                                             // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
+            memory[variablestartpoint] = asd;          // modulo 1<<8 e gerek var mı ?? !!!
             memory[variablestartpoint + 1] = asd >> 8; // get upper via shift 8 bit right
 
             variables[varname] = make_pair("dw", variablestartpoint);
@@ -205,6 +228,7 @@ int main(int argc, char *argv[])
                  << line << endl;
             return 0;
          }
+         ins = ins.substr(0, ins.length() - 1);
          // cout << "label buldum "<< endl;
          labels[ins] = sayac;
       }
@@ -292,6 +316,10 @@ int main(int argc, char *argv[])
             mov(first, second); // ax  ,bx    ax,01h
             // break;
          }
+         else if (ins == "cmp")
+         {
+            cmp(first, second);
+         }
          // else if(ins=="add"){
          // add(first,second);
          // }
@@ -340,77 +368,6 @@ int main(int argc, char *argv[])
          // {
          //    shr(first, second);
          // }
-         // else if(ins=="push"){
-         //    push(first,second);
-         // }
-         // else if(ins=="pop"){
-         //    pop(first,second);
-         // }
-         // else if(ins=="nop"){
-         //    nop(first,second);
-         // }
-         // else if (ins == "cmp")
-         // {
-         //    cmp(first);
-         // }
-         // else if (ins == "jz")
-         // {
-         //    jz(first);
-         // }
-         // else if (ins == "jnz")
-         // {
-         //    jnz(first);
-         // }
-         // else if (ins == "je")
-         // {
-         //    je(first);
-         // }
-         // else if (ins == "jne")
-         // {
-         //    jne(first);
-         // }
-         // else if (ins == "ja")
-         // {
-         //    ja(first);
-         // }
-         // else if (ins == "jae")
-         // {
-         //    jae(first);
-         // }
-         // else if (ins == "jb")
-         // {
-         //    jb(first);
-         // }
-         // else if (ins == "jbe")
-         // {
-         //    jbe(first);
-         // }
-         // else if (ins == "jnae")
-         // {
-         //    jnae(first);
-         // }
-         // else if (ins == "jnb")
-         // {
-         //    jnb(first);
-         // }
-         // else if (ins == "jnbe")
-         // {
-         //    jnbe(first);
-         // }
-         // else if (ins == "jnc")
-         // {
-         //    jnc(first);
-         // }
-         // else if (ins == "jc")
-         // {
-         //    jc(first);
-         // }
-         // else if(ins=="push"){
-         //    push(first,second);
-         // }
-         // else if(ins=="pop"){
-         //    pop(first,second);
-         // }
          // else if(ins=="int20h"){
          //    int20h(first,second);
          // }
@@ -420,7 +377,73 @@ int main(int argc, char *argv[])
          string first;
          getline(iss, first, ',');
          strip(first);
-         cout << "1: " << ins << " Par1: " << first << endl;
+         cout << "Ins: " << ins << " Dest: " << first << endl;
+
+         if (ins == "push")
+         {
+            push(first);
+         }
+         else if (ins == "pop")
+         {
+            pop(first);
+         }
+
+         else if (ins == "jz")
+         {
+            jz(first);
+         }
+         else if (ins == "jnz")
+         {
+            jnz(first);
+         }
+         else if (ins == "je")
+         {
+            je(first);
+         }
+         else if (ins == "jne")
+         {
+            jne(first);
+         }
+         else if (ins == "ja")
+         {
+            ja(first);
+         }
+         else if (ins == "jae")
+         {
+            jae(first);
+         }
+         else if (ins == "jb")
+         {
+            jb(first);
+         }
+         else if (ins == "jbe")
+         {
+            jbe(first);
+         }
+         else if (ins == "jnae")
+         {
+            jnae(first);
+         }
+         else if (ins == "jnb")
+         {
+            jnb(first);
+         }
+         else if (ins == "jnbe")
+         {
+            jnbe(first);
+         }
+         else if (ins == "jnc")
+         {
+            jnc(first);
+         }
+         else if (ins == "jc")
+         {
+            jc(first);
+         }
+         else if (ins == "nop")
+         {
+            cout<<"NOP - continue"<<endl;
+         }
       }
 
       // vector<string> result;
@@ -433,7 +456,8 @@ int main(int argc, char *argv[])
       // }
       print_16bitregs();
       printmemo();
-
+      printflags();
+      printStack();
       PC++;
    }
 
@@ -458,8 +482,14 @@ int main(int argc, char *argv[])
    print_16bitregs();
 
    cout << endl
-        << "memo:" << endl;
+        << "variable memo:" << endl;
    printmemo();
+   cout << endl
+        << "flags:" << endl;
+   printflags();
+   cout << endl
+        << "stack:" << endl;
+   printStack();
    // print_hex(*pah);
    // print_hex(*pal);
 }
@@ -469,6 +499,24 @@ void printmemo()
    for (int i = 6 * (sayac + 2); i < variablestartpoint; i++)
    {
       cout << "memo[" << i << "] : " << 0 + memory[i] << endl;
+   }
+}
+
+void printflags()
+{
+
+   cout << "ZF: " << zf << endl;
+   cout << "SF: " << sf << endl;
+   cout << "CF: " << cf << endl;
+   cout << "AF: " << af << endl;
+   cout << "OF: " << of << endl;
+}
+
+void printStack()
+{
+   for (int i = (1 << 16) - 1; i > sp + 1; i--)
+   {
+      cout << "stack[" << i << "] : " << 0 + memory[i] << endl;
    }
 }
 
@@ -543,14 +591,14 @@ string strip(string &str)
    if (end >= start)
    {
       str = str.substr(start, end - start + 1);
-      newstr= str;
+      newstr = str;
       return newstr;
    }
 
    else
    {
       str = "";
-      newstr= str;
+      newstr = str;
       return newstr;
    }
 }
@@ -707,7 +755,7 @@ string typeofoperand(string operand)
    }
    else if (variables.count(temp))
    {
-      return variables[temp].first;
+      return variables[temp].first; // "dw"   or "db" !!!
    }
    //   if(  )   TODO add imme,offst,...
    else
@@ -786,6 +834,10 @@ int getValue(string operand)
    else
    //   if(  )   TODO add imme,offst,...
    {
+      if (tointeger(operand) > (1 << 16) - 1)
+      {
+         error("too big number");
+      }
       return tointeger(operand); // i am not sure about immediate values
    }
 }
@@ -816,7 +868,7 @@ unsigned char &getMemoRef(string operand)
       string innerstr = bwsiztemp.substr(1, bwsiztemp.length() - 2);
       strip(innerstr);
       int inval = getValue(innerstr);
-      cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
+      // cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
       return memory[inval];
    }
    else
@@ -952,17 +1004,57 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
    return true;
 }
 
-// bool add(string a, string b)
-// {
-// }
+bool add(string dest, string src)
+{
+}
+
+bool push(string operand)
+{
+
+   string type = typeofoperand(operand);
+   int value = getValue(operand);
+   if (type == "value" || type == "offset")
+   {
+      getMemoRef("w[" + to_string((int)sp) + "]") = value;
+      getMemoRef("w[" + to_string((int)sp + 1) + "]") = value >> 8;
+   }
+   else
+   {
+      if (bitnumberof(operand) == 16)
+      {
+         getMemoRef("w[" + to_string((int)sp) + "]") = value;
+         getMemoRef("w[" + to_string((int)sp + 1) + "]") = value >> 8;
+      }
+      else
+      {
+         error("not valid bit size !=16");
+         return false;
+      }
+   }
+
+   sp -= 2;
+   return true;
+}
+bool pop(string operand)
+{
+
+   string value = to_string(getValue("w[" + to_string((int)sp + 2) + "]"));
+   cout << "pop val:" << value << endl;
+   if (bitnumberof(operand) == 16)
+   {
+      mov(operand, value);
+   }
+   else
+   {
+      error("not valid bit size !=16");
+      return false;
+   }
+   sp += 2;
+   return true;
+}
 
 // NOTES
 // dont confuse 1<<8 and 2<<8
-
-// bool cmp(indexOfcmp)
-// {
-//    // if a=b
-// }
 
 //If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
 

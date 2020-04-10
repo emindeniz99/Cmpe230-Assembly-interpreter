@@ -18,12 +18,11 @@ print:
     mov ah, 02h
     int 21h
     mov dl, init
-    xor dl, var2
+    xor dl, 7h
     int 21h
 exit:
     int 20h
-init db 62h
-var2 db 7h
+init db 'b'
 cnt dw 3d
 code ends
 --------------------

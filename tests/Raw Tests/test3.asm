@@ -1,5 +1,5 @@
 code segment
-mov cl, value
+mov cx, value
 rev:
    mov ah, 0
    mov al, cl
@@ -13,5 +13,5 @@ rev:
    cmp cl, 0
    jnz rev
 int 20h
-value db 30h
+value dw 30h
 code ends
