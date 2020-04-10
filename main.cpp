@@ -13,6 +13,8 @@ void print_hex(datatype x);
 template <class regtype>
 void mov_reg_reg(regtype *preg1, regtype *preg2);
 void print_16bitregs();
+void printflags();
+void printmemo();
 
 // short 16 bit
 // char 8 bit
@@ -71,6 +73,26 @@ void lowerCase(string &str);
 
 bool mov(string a, string b);
 bool add(string a, string b);
+void jnc(string a);
+void jc(string a);
+void jbe(string a);
+void jnae(string a);
+void jb(string a);
+void jnb(string a);
+void jae(string a);
+void jnbe(string a);
+void ja(string a);
+void jnz(string a);
+void jne(string a);
+void jz(string a);
+void je(string a);
+bool cmp(string a, string b);
+bool shr(string a, string b);
+bool shl(string a, string b);
+bool _not(string a);
+bool _xor(string a, string b);
+bool _or(string a, string b);
+bool _and(string a, string b);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
@@ -78,11 +100,10 @@ int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 void error(string errormsg)
 {
    cout << "ERROR: " << errormsg << endl;
-   // exit(1);   // comment it to avoid from stopping program
+   //  exit(1);   // comment it to avoid from stopping program
 }
 
 int sayac = -1; // !
-void printmemo();
 int main(int argc, char *argv[])
 {
    // *pax = 1;
@@ -205,6 +226,7 @@ int main(int argc, char *argv[])
                  << line << endl;
             return 0;
          }
+         ins=ins.substr(0,ins.length()-1);
          // cout << "label buldum "<< endl;
          labels[ins] = sayac;
       }
@@ -292,6 +314,10 @@ int main(int argc, char *argv[])
             mov(first, second); // ax  ,bx    ax,01h
             // break;
          }
+        else if (ins == "cmp")
+         {
+            cmp(first,second);
+         }
          // else if(ins=="add"){
          // add(first,second);
          // }
@@ -349,62 +375,6 @@ int main(int argc, char *argv[])
          // else if(ins=="nop"){
          //    nop(first,second);
          // }
-         // else if (ins == "cmp")
-         // {
-         //    cmp(first);
-         // }
-         // else if (ins == "jz")
-         // {
-         //    jz(first);
-         // }
-         // else if (ins == "jnz")
-         // {
-         //    jnz(first);
-         // }
-         // else if (ins == "je")
-         // {
-         //    je(first);
-         // }
-         // else if (ins == "jne")
-         // {
-         //    jne(first);
-         // }
-         // else if (ins == "ja")
-         // {
-         //    ja(first);
-         // }
-         // else if (ins == "jae")
-         // {
-         //    jae(first);
-         // }
-         // else if (ins == "jb")
-         // {
-         //    jb(first);
-         // }
-         // else if (ins == "jbe")
-         // {
-         //    jbe(first);
-         // }
-         // else if (ins == "jnae")
-         // {
-         //    jnae(first);
-         // }
-         // else if (ins == "jnb")
-         // {
-         //    jnb(first);
-         // }
-         // else if (ins == "jnbe")
-         // {
-         //    jnbe(first);
-         // }
-         // else if (ins == "jnc")
-         // {
-         //    jnc(first);
-         // }
-         // else if (ins == "jc")
-         // {
-         //    jc(first);
-         // }
          // else if(ins=="push"){
          //    push(first,second);
          // }
@@ -421,6 +391,60 @@ int main(int argc, char *argv[])
          getline(iss, first, ',');
          strip(first);
          cout << "1: " << ins << " Par1: " << first << endl;
+
+          
+         if (ins == "jz")
+         {
+            jz(first);
+         }
+         else if (ins == "jnz")
+         {
+            jnz(first);
+         }
+         else if (ins == "je")
+         {
+            je(first);
+         }
+         else if (ins == "jne")
+         {
+            jne(first);
+         }
+         else if (ins == "ja")
+         {
+            ja(first);
+         }
+         else if (ins == "jae")
+         {
+            jae(first);
+         }
+         else if (ins == "jb")
+         {
+            jb(first);
+         }
+         else if (ins == "jbe")
+         {
+            jbe(first);
+         }
+         else if (ins == "jnae")
+         {
+            jnae(first);
+         }
+         else if (ins == "jnb")
+         {
+            jnb(first);
+         }
+         else if (ins == "jnbe")
+         {
+            jnbe(first);
+         }
+         else if (ins == "jnc")
+         {
+            jnc(first);
+         }
+         else if (ins == "jc")
+         {
+            jc(first);
+         }
       }
 
       // vector<string> result;
@@ -433,6 +457,7 @@ int main(int argc, char *argv[])
       // }
       print_16bitregs();
       printmemo();
+   printflags();
 
       PC++;
    }
@@ -458,8 +483,10 @@ int main(int argc, char *argv[])
    print_16bitregs();
 
    cout << endl
-        << "memo:" << endl;
+        << "variable memo:" << endl;
    printmemo();
+   cout<<endl<< "flags:"<<endl;
+   printflags();
    // print_hex(*pah);
    // print_hex(*pal);
 }
@@ -470,6 +497,16 @@ void printmemo()
    {
       cout << "memo[" << i << "] : " << 0 + memory[i] << endl;
    }
+}
+
+
+void printflags(){
+
+cout<<"ZF: "<<zf<<endl;
+cout<<"SF: "<<sf<<endl;
+cout<<"CF: "<<cf<<endl;
+cout<<"AF: "<<af<<endl;
+cout<<"OF: "<<of<<endl;
 }
 
 template <class regtype>
@@ -543,14 +580,14 @@ string strip(string &str)
    if (end >= start)
    {
       str = str.substr(start, end - start + 1);
-      newstr= str;
+      newstr = str;
       return newstr;
    }
 
    else
    {
       str = "";
-      newstr= str;
+      newstr = str;
       return newstr;
    }
 }
@@ -959,10 +996,6 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
 // NOTES
 // dont confuse 1<<8 and 2<<8
 
-// bool cmp(indexOfcmp)
-// {
-//    // if a=b
-// }
 
 //If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
 
@@ -1101,6 +1134,7 @@ void jne(string a)
    { //Check ZF Flag
       PC = labels[strip(a)] - 1;
    }
+   
 }
 //JNZ       //signed and unsigned        //Jump not zero
 void jnz(string a)
