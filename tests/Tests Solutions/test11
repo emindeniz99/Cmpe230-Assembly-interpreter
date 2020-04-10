@@ -43,7 +43,7 @@ print:
     int 21h
 ex:
     int 20h
-var1 db 0
-var2 db 0
+var1 db 'x'
+var2 db 'y'
 code ends
 --------------------

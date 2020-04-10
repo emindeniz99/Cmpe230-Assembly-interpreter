@@ -14,7 +14,7 @@ nop
 mov ah, var2
 mov bx, var1
 int 20h
-var1 db 10h
+var1 db 'x'
 var2 dw 20h
 code ends
 --------------------

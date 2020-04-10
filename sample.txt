@@ -1,3 +1,18 @@
+code segment   
+    mov al,17
+push 300     
+push 35
+pop ax  
+pop bx  
+push 36  
+push 3435
+push 35554    
+mov bx, 0045h
+pop ax
+int 20h
+code ends
+
+
 code segment 
 
 mov ax,0101h

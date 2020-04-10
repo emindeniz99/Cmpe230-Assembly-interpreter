@@ -1,7 +1,8 @@
 code segment
 oper:
    mov al, 7
-   mul first_el
+   mov cl, 10d
+   mul cl
    cmp ax, 50d
    ja res
    mov ah, 02h
@@ -13,6 +14,5 @@ res:
    int   21h
 int 20h
 greater db '>'
-lower db '<'   
-first_el db 10d 
+lower db '<'  
 code ends

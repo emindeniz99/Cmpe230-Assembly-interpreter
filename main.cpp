@@ -15,7 +15,7 @@ void mov_reg_reg(regtype *preg1, regtype *preg2);
 void print_16bitregs();
 void printflags();
 void printmemo();
-
+void printStack();
 // short 16 bit
 // char 8 bit
 
@@ -93,6 +93,8 @@ bool _not(string a);
 bool _xor(string a, string b);
 bool _or(string a, string b);
 bool _and(string a, string b);
+bool push(string operand);
+bool pop(string operand);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
@@ -192,8 +194,8 @@ int main(int argc, char *argv[])
             variablestartpoint++;
          }
          else if (type == "dw")
-         { // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
-            memory[variablestartpoint] = asd;
+         {                                             // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
+            memory[variablestartpoint] = asd;          // modulo 1<<8 e gerek var mı ?? !!!
             memory[variablestartpoint + 1] = asd >> 8; // get upper via shift 8 bit right
 
             variables[varname] = make_pair("dw", variablestartpoint);
@@ -226,7 +228,7 @@ int main(int argc, char *argv[])
                  << line << endl;
             return 0;
          }
-         ins=ins.substr(0,ins.length()-1);
+         ins = ins.substr(0, ins.length() - 1);
          // cout << "label buldum "<< endl;
          labels[ins] = sayac;
       }
@@ -314,9 +316,9 @@ int main(int argc, char *argv[])
             mov(first, second); // ax  ,bx    ax,01h
             // break;
          }
-        else if (ins == "cmp")
+         else if (ins == "cmp")
          {
-            cmp(first,second);
+            cmp(first, second);
          }
          // else if(ins=="add"){
          // add(first,second);
@@ -366,20 +368,8 @@ int main(int argc, char *argv[])
          // {
          //    shr(first, second);
          // }
-         // else if(ins=="push"){
-         //    push(first,second);
-         // }
-         // else if(ins=="pop"){
-         //    pop(first,second);
-         // }
          // else if(ins=="nop"){
          //    nop(first,second);
-         // }
-         // else if(ins=="push"){
-         //    push(first,second);
-         // }
-         // else if(ins=="pop"){
-         //    pop(first,second);
          // }
          // else if(ins=="int20h"){
          //    int20h(first,second);
@@ -392,8 +382,16 @@ int main(int argc, char *argv[])
          strip(first);
          cout << "1: " << ins << " Par1: " << first << endl;
 
-          
-         if (ins == "jz")
+         if (ins == "push")
+         {
+            push(first);
+         }
+         else if (ins == "pop")
+         {
+            pop(first);
+         }
+
+         else if (ins == "jz")
          {
             jz(first);
          }
@@ -457,8 +455,8 @@ int main(int argc, char *argv[])
       // }
       print_16bitregs();
       printmemo();
-   printflags();
-
+      printflags();
+      printStack();
       PC++;
    }
 
@@ -485,8 +483,12 @@ int main(int argc, char *argv[])
    cout << endl
         << "variable memo:" << endl;
    printmemo();
-   cout<<endl<< "flags:"<<endl;
+   cout << endl
+        << "flags:" << endl;
    printflags();
+   cout << endl
+        << "stack:" << endl;
+   printStack();
    // print_hex(*pah);
    // print_hex(*pal);
 }
@@ -499,14 +501,22 @@ void printmemo()
    }
 }
 
+void printflags()
+{
 
-void printflags(){
+   cout << "ZF: " << zf << endl;
+   cout << "SF: " << sf << endl;
+   cout << "CF: " << cf << endl;
+   cout << "AF: " << af << endl;
+   cout << "OF: " << of << endl;
+}
 
-cout<<"ZF: "<<zf<<endl;
-cout<<"SF: "<<sf<<endl;
-cout<<"CF: "<<cf<<endl;
-cout<<"AF: "<<af<<endl;
-cout<<"OF: "<<of<<endl;
+void printStack()
+{
+   for (int i = (1 << 16) - 1; i > sp + 1; i--)
+   {
+      cout << "stack[" << i << "] : " << 0 + memory[i] << endl;
+   }
 }
 
 template <class regtype>
@@ -744,7 +754,7 @@ string typeofoperand(string operand)
    }
    else if (variables.count(temp))
    {
-      return variables[temp].first;
+      return variables[temp].first; // "dw"   or "db" !!!
    }
    //   if(  )   TODO add imme,offst,...
    else
@@ -823,6 +833,10 @@ int getValue(string operand)
    else
    //   if(  )   TODO add imme,offst,...
    {
+      if (tointeger(operand) > (1 << 16) - 1)
+      {
+         error("too big number");
+      }
       return tointeger(operand); // i am not sure about immediate values
    }
 }
@@ -853,7 +867,7 @@ unsigned char &getMemoRef(string operand)
       string innerstr = bwsiztemp.substr(1, bwsiztemp.length() - 2);
       strip(innerstr);
       int inval = getValue(innerstr);
-      cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
+      // cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
       return memory[inval];
    }
    else
@@ -989,13 +1003,57 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
    return true;
 }
 
-// bool add(string a, string b)
-// {
-// }
+bool add(string dest, string src)
+{
+}
+
+bool push(string operand)
+{
+
+   string type = typeofoperand(operand);
+   int value = getValue(operand);
+   if (type == "value" || type == "offset")
+   {
+      getMemoRef("w[" + to_string((int)sp) + "]") = value;
+      getMemoRef("w[" + to_string((int)sp + 1) + "]") = value >> 8;
+   }
+   else
+   {
+      if (bitnumberof(operand) == 16)
+      {
+         getMemoRef("w[" + to_string((int)sp) + "]") = value;
+         getMemoRef("w[" + to_string((int)sp + 1) + "]") = value >> 8;
+      }
+      else
+      {
+         error("not valid bit size !=16");
+         return false;
+      }
+   }
+
+   sp -= 2;
+   return true;
+}
+bool pop(string operand)
+{
+
+   string value = to_string(getValue("w[" + to_string((int)sp + 2) + "]"));
+   cout << "pop val:" << value << endl;
+   if (bitnumberof(operand) == 16)
+   {
+      mov(operand, value);
+   }
+   else
+   {
+      error("not valid bit size !=16");
+      return false;
+   }
+   sp += 2;
+   return true;
+}
 
 // NOTES
 // dont confuse 1<<8 and 2<<8
-
 
 //If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
 
@@ -1134,7 +1192,6 @@ void jne(string a)
    { //Check ZF Flag
       PC = labels[strip(a)] - 1;
    }
-   
 }
 //JNZ       //signed and unsigned        //Jump not zero
 void jnz(string a)
