@@ -5,6 +5,8 @@
 
 using namespace std;
 
+bool DebugMode = false;  // to get real outputs, assign it false
+
 // prototypes
 template <class datatype>
 void print_bits(datatype x);
@@ -97,6 +99,7 @@ bool push(string operand);
 bool pop(string operand);
 bool rcr(string a, string b);
 bool rcl(string a, string b);
+bool _int(string operand);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
@@ -104,7 +107,9 @@ int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 void error(string errormsg)
 {
    cout << "ERROR: " << errormsg << endl;
-   //  exit(1);   // comment it to avoid from stopping program
+   if(!DebugMode){
+      exit(1);   // comment it to avoid from stopping program
+   }  
 }
 
 int sayac = -1; // !
@@ -121,7 +126,11 @@ int main(int argc, char *argv[])
       cerr << "Please, give filename as an argument" << endl;
       return 0;
    }
-   cout << "Loaded filename: " << argv[1] << endl;
+   if (DebugMode)
+   {
+      cout << "Loaded filename: " << argv[1] << endl;
+   }
+
    ifstream file("./" + (string)argv[1]);
 
    if (file.peek() == EOF) // checks if file exists or not
@@ -231,15 +240,16 @@ int main(int argc, char *argv[])
             return 0;
          }
          ins = ins.substr(0, ins.length() - 1);
-         // cout << "label buldum "<< endl;
+         // cout << "label buldum :"<<sayac<< endl;
          labels[ins] = sayac;
       }
       else
       {
          commands.push_back(line);
+         sayac++;
       }
 
-      sayac++;
+      // sayac++; // wrong place for sayac, i moved above
 
       // vector<string> result;
       // while (ss.good()) // AX,[ 0abcdh ]
@@ -269,31 +279,38 @@ int main(int argc, char *argv[])
       // }
    }
 
-   // print instructions
-   for (int i = 0; i < commands.size(); i++)
+   if (DebugMode)
    {
-      cout << "[" << i << "] " << commands[i] << endl;
+      // print instructions
+      for (int i = 0; i < commands.size(); i++)
+      {
+         cout << "[" << i << "] " << commands[i] << endl;
+      }
+      map<string, int>::iterator it;
+
+      cout << endl
+           << "Labels:\n";
+      for (it = labels.begin(); it != labels.end(); ++it)
+         cout << it->first << " => " << it->second << '\n';
+      cout << endl;
+
+      map<string, pair<string, int>>::iterator it2;
+      cout << "Variables:\n";
+      for (it2 = variables.begin(); it2 != variables.end(); ++it2)
+         cout << it2->first << " => " << it2->second.first << " [" << it2->second.second << "]" << '\n';
+      cout << endl;
+
+      cout << "Program starts execution" << endl;
    }
 
-   map<string, int>::iterator it;
-
-   cout << endl
-        << "Labels:\n";
-   for (it = labels.begin(); it != labels.end(); ++it)
-      cout << it->first << " => " << it->second << '\n';
-   cout << endl;
-
-   map<string, pair<string, int>>::iterator it2;
-   cout << "Variables:\n";
-   for (it2 = variables.begin(); it2 != variables.end(); ++it2)
-      cout << it2->first << " => " << it2->second.first << " [" << it2->second.second << "]" << '\n';
-   cout << endl;
-
-   cout << "Program starts execution" << endl;
-   while (PC != commands.size())
+   while (PC < commands.size())
    {
-      cout << endl
-           << "line: " << PC << endl;
+      if (DebugMode)
+      {
+         cout << endl
+              << "line: " << PC << endl;
+      }
+
       string currcmd = commands[PC];
       istringstream iss(currcmd);
       string ins;
@@ -311,7 +328,10 @@ int main(int argc, char *argv[])
          // iss >> second;
          strip(first);
          strip(second);
-         cout << "Ins: " << ins << " Dest: " << first << " Src: " << second << endl;
+         if (DebugMode)
+         {
+            cout << "Ins: " << ins << " Dest: " << first << " Src: " << second << endl;
+         }
 
          if (ins == "mov")
          {
@@ -367,18 +387,20 @@ int main(int argc, char *argv[])
          else if (ins == "shr")
          {
             shr(first, second);
+         }else{
+            cout<<"Error"<<endl;
+            exit(1);
          }
-         // else if(ins=="int20h"){
-         //    int20h(first,second);
-         // }
       }
       else
       {
          string first;
          getline(iss, first, ',');
          strip(first);
-         cout << "Ins: " << ins << " Dest: " << first << endl;
-
+         if (DebugMode)
+         {
+            cout << "Ins: " << ins << " Dest: " << first << endl;
+         }
          if (ins == "push")
          {
             push(first);
@@ -442,11 +464,22 @@ int main(int argc, char *argv[])
          }
          else if (ins == "nop")
          {
-            cout << "NOP - continue" << endl;
+            if (DebugMode)
+            {
+               cout << "NOP - continue" << endl;
+            }
          }
          else if (ins == "not")
          {
             _not(first);
+         }
+         else if (ins == "int")
+         {
+            _int(first);
+         }
+         else{
+            cout<<"Error"<<endl;
+            exit(1);
          }
       }
 
@@ -458,13 +491,18 @@ int main(int argc, char *argv[])
       //    cout<<substr;
       //    result.push_back(substr);
       // }
-      print_16bitregs();
-      printmemo();
-      printflags();
-      printStack();
+      if (DebugMode)
+      {
+         print_16bitregs();
+         printmemo();
+         printflags();
+         printStack();
+      }
+
       PC++;
    }
 
+   cout<<endl;
    // 2. Place  dw and db data  and compute addresses
 
    // 3.  PC = line 0
@@ -481,19 +519,23 @@ int main(int argc, char *argv[])
    //     }
    //
    // }
-   cout << endl
-        << "registers:" << endl;
-   print_16bitregs();
+   if (DebugMode)
+   {
+      cout << endl
+           << "registers:" << endl;
+      print_16bitregs();
 
-   cout << endl
-        << "variable memo:" << endl;
-   printmemo();
-   cout << endl
-        << "flags:" << endl;
-   printflags();
-   cout << endl
-        << "stack:" << endl;
-   printStack();
+      cout << endl
+           << "variable memo:" << endl;
+      printmemo();
+      cout << endl
+           << "flags:" << endl;
+      printflags();
+      cout << endl
+           << "stack:" << endl;
+      printStack();
+   }
+
    // print_hex(*pah);
    // print_hex(*pal);
 }
@@ -809,7 +851,7 @@ int getValue(string operand)
       string innerstr = bwsiztemp.substr(1, bwsiztemp.length() - 2);
       strip(innerstr);
       int inval = getValue(innerstr);
-      cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
+      // cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
       return memory[inval + 1] * (1 << 8) + memory[inval];
    }
    else if (temp.find("offset") == 0)
@@ -894,9 +936,13 @@ unsigned char &getMemoRef(string operand)
 
 bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
 {
-   cout << "value - bit - type" << endl
-        << getValue(dest) << " " << bitnumberof(dest) << "  " << typeofoperand(dest) << endl
-        << getValue(src) << "   " << bitnumberof(src) << "  " << typeofoperand(src) << endl;
+   if (DebugMode)
+   {
+      cout << "value - bit - type" << endl
+           << getValue(dest) << " " << bitnumberof(dest) << "  " << typeofoperand(dest) << endl
+           << getValue(src) << "   " << bitnumberof(src) << "  " << typeofoperand(src) << endl;
+   }
+
    string typedest = typeofoperand(dest);
    string typesrc = typeofoperand(src);
 
@@ -1043,7 +1089,11 @@ bool pop(string operand)
 {
 
    string value = to_string(getValue("w[" + to_string((int)sp + 2) + "]"));
-   cout << "pop val:" << value << endl;
+   if (DebugMode)
+   {
+      cout << "pop val:" << value << endl;
+   }
+
    if (bitnumberof(operand) == 16)
    {
       mov(operand, value);
@@ -1069,13 +1119,13 @@ bool _and(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-      getValue(a) & getValue(b);
+    mov(a,to_string(getValue(a) & getValue(b)))  ;
    }
    else
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         getValue(a) & getValue(b);
+         mov(a,to_string(getValue(a) & getValue(b)))  ;
       }
    }
    return true;
@@ -1084,13 +1134,15 @@ bool _or(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-      getValue(a) | getValue(b);
+      mov(a,to_string(getValue(a) | getValue(b)))  ;
    }
    else
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         getValue(a) | getValue(b);
+         // cout<<a<<"-"<<b<<endl;
+         // cout<<"asdas"<<(getValue(a) | getValue(b))<<endl;
+         mov(a,to_string(getValue(a) | getValue(b)))  ;
       }
    }
    return true;
@@ -1099,13 +1151,13 @@ bool _xor(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-      getValue(a) ^ getValue(b);
+      mov(a,to_string(getValue(a) ^ getValue(b)))  ;
    }
    else
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         getValue(a) ^ getValue(b);
+         mov(a,to_string(getValue(a) ^ getValue(b)))  ;
       }
    }
    return true;
@@ -1322,38 +1374,92 @@ bool rcl(string a, string b)
       total += binaryArr[i] * two;
    }
    mov(a, to_string(total));
+
+   
+   // rcl=> (a<<1)%(1<<8)  + (a<<1)/(1<<8)  check above 
 }
 bool rcr(string a, string b)
 {
-   int value = getValue(a);
-   int lengthOfArr = bitnumberof(a);
-   int binaryArr[lengthOfArr - 1];
-   for (int i = 0; value > 0; i++)
+   // int value = getValue(a);
+   // int lengthOfArr = bitnumberof(a);
+   // int binaryArr[lengthOfArr - 1];
+   // for (int i = 0; value > 0; i++)
+   // {
+   //    binaryArr[i] = value % 2;
+   //    value = value / 2;
+   // }
+   // for (int i = 0; i < lengthOfArr - 1; i++)
+   // {
+   //    int temp = binaryArr[i];
+   //    binaryArr[i] = binaryArr[i + 1];
+   //    binaryArr[i + 1] = temp;
+   // }
+   // int total = 0;
+   // int i = 0;
+   // if (i == 0)
+   // {
+   //    total = binaryArr[0] * 2;
+   //    i++;
+   // }
+   // for (i = 1; i < lengthOfArr; i++)
+   // {
+   //    int two = 1;
+   //    for (int j = 0; j < i; j++)
+   //    {
+   //       two = 2 * two;
+   //    }
+   //    total += binaryArr[i] * two;
+   // }
+   // mov(a, to_string(total%(bitnumberof(a))));
+   int bit=bitnumberof(a);
+   int val=getValue(b);
+   int va=getValue(a);
+   mov(a,to_string(     ((va)%( 1<<val ))*(1<<(bit-val))  + (va>>val)      ));
+   
+}
+
+bool _int(string operand)
+{
+   strip(operand);
+   if (operand == "21h")
    {
-      binaryArr[i] = value % 2;
-      value = value / 2;
-   }
-   for (int i = 0; i < lengthOfArr - 1; i++)
-   {
-      int temp = binaryArr[i];
-      binaryArr[i] = binaryArr[i + 1];
-      binaryArr[i + 1] = temp;
-   }
-   int total = 0;
-   int i = 0;
-   if (i == 0)
-   {
-      total = binaryArr[0] * 2;
-      i++;
-   }
-   for (i = 1; i < lengthOfArr; i++)
-   {
-      int two = 1;
-      for (int j = 0; j < i; j++)
+      if (getValue("ah") == 1)
       {
-         two = 2 * two;
+         char temp;
+         cin >> temp;
+         if (DebugMode)
+         {
+            cout << "input(ascii dec no):" << to_string(temp) << endl;
+         }
+
+         *(converter8bit["al"]) = temp;
       }
-      total += binaryArr[i] * two;
+      else if (getValue("ah") == 2)
+      {
+         if (DebugMode)
+         {
+            cout << "output:";
+         }
+         cout << (char)getValue("dl");
+         if (DebugMode)
+         {
+            cout << endl;
+         }
+      }
+      else
+      {
+         error("what does int 21h do?");
+      }
+   } else if(operand == "20h"){
+      if (DebugMode){
+         cout<<"int20h stop"<<endl;
+      }
+      exit(1);
    }
-   mov(a, to_string(total));
+   else
+   {
+      error("wrong int 21h parameter");
+      return false;
+   }
+   return true;
 }
