@@ -66,7 +66,7 @@ map<string, pair<string, int>> variables; // myvar,type,memory ref, myvar,db/dw,
 int variablestartpoint = 0; // it should be updated wrt sayac, until int20h
 
 // functions
-void strip(string &str);
+string strip(string &str);
 void lowerCase(string &str);
 
 bool mov(string a, string b);
@@ -310,17 +310,21 @@ int main(int argc, char *argv[])
          // else if(ins=="div"){
          //    div(first,second);
          // }
-         // else if(ins=="xor"){
-         //    xor(first,second);
+         // else if (ins == "xor")
+         // {
+         //    _xor(first, second);
          // }
-         // else if(ins=="or"){
-         //    or(first,second);
+         // else if (ins == "or")
+         // {
+         //    _or(first, second);
          // }
-         // else if(ins=="and"){
-         //    add(first,second);
+         // else if (ins == "and")
+         // {
+         //    _and(first, second);
          // }
-         // else if(ins=="not"){
-         //    not(first,second);
+         // else if (ins == "not")
+         // {
+         //    _not(first);
          // }
          // else if(ins=="rcl"){
          //    rcl(first,second);
@@ -328,11 +332,13 @@ int main(int argc, char *argv[])
          // else if(ins=="rcr"){
          //    rcr(first,second);
          // }
-         // else if(ins=="shl"){
-         //    shl(first,second);
+         // else if (ins == "shl")
+         // {
+         //    shl(first, second);
          // }
-         // else if(ins=="shr"){
-         //    shr(first,second);
+         // else if (ins == "shr")
+         // {
+         //    shr(first, second);
          // }
          // else if(ins=="push"){
          //    push(first,second);
@@ -343,47 +349,61 @@ int main(int argc, char *argv[])
          // else if(ins=="nop"){
          //    nop(first,second);
          // }
-         // else if(ins=="cmp"){
-         //    cmp(first,second);
+         // else if (ins == "cmp")
+         // {
+         //    cmp(first);
          // }
-         // else if(ins=="jz"){
-         //    jz(first,second);
+         // else if (ins == "jz")
+         // {
+         //    jz(first);
          // }
-         // else if(ins=="jnz"){
-         //    jnz(first,second);
+         // else if (ins == "jnz")
+         // {
+         //    jnz(first);
          // }
-         // else if(ins=="je"){
-         //    je(first,second);
+         // else if (ins == "je")
+         // {
+         //    je(first);
          // }
-         // else if(ins=="jne"){
-         //    jne(first,second);
+         // else if (ins == "jne")
+         // {
+         //    jne(first);
          // }
-         // else if(ins=="ja"){
-         //    ja(first,second);
+         // else if (ins == "ja")
+         // {
+         //    ja(first);
          // }
-         // else if(ins=="jae"){
-         //    jae(first,second);
+         // else if (ins == "jae")
+         // {
+         //    jae(first);
          // }
-         // else if(ins=="jb"){
-         //    jb(first,second);
+         // else if (ins == "jb")
+         // {
+         //    jb(first);
          // }
-         // else if(ins=="jbe"){
-         //    jbe(first,second);
+         // else if (ins == "jbe")
+         // {
+         //    jbe(first);
          // }
-         // else if(ins=="jnae"){
-         //    jnae(first,second);
+         // else if (ins == "jnae")
+         // {
+         //    jnae(first);
          // }
-         // else if(ins=="jnb"){
-         //    jnb(first,second);
+         // else if (ins == "jnb")
+         // {
+         //    jnb(first);
          // }
-         // else if(ins=="jnbe"){
-         //    jnbe(first,second);
+         // else if (ins == "jnbe")
+         // {
+         //    jnbe(first);
          // }
-         // else if(ins=="jnc"){
-         //    jnc(first,second);
+         // else if (ins == "jnc")
+         // {
+         //    jnc(first);
          // }
-         // else if(ins=="jc"){
-         //    jc(first,second);
+         // else if (ins == "jc")
+         // {
+         //    jc(first);
          // }
          // else if(ins=="push"){
          //    push(first,second);
@@ -494,7 +514,7 @@ void print_16bitregs()
 // https://stackoverflow.com/questions/83439/remove-spaces-from-stdstring-in-c
 // https://en.cppreference.com/w/cpp/algorithm/remove
 // strip deletes spaces according to left side and right side
-void strip(string &str)
+string strip(string &str)
 {
    string newstr;
    int start = 0, end = str.length() - 1;
@@ -521,9 +541,18 @@ void strip(string &str)
       }
    }
    if (end >= start)
+   {
       str = str.substr(start, end - start + 1);
+      newstr= str;
+      return newstr;
+   }
+
    else
+   {
       str = "";
+      newstr= str;
+      return newstr;
+   }
 }
 
 void lowerCase(string &str)
@@ -935,7 +964,115 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
 //    // if a=b
 // }
 
-/*
+//If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
+
+//Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
+
+//JE     //signed and unsigned      //Jump equal
+bool _and(string a, string b)
+{
+   if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
+   {
+      getValue(a) & getValue(b);
+   }
+   else
+   {
+      if (bitnumberof(a) == bitnumberof(b))
+      {
+         getValue(a) & getValue(b);
+      }
+   }
+   return true;
+}
+bool _or(string a, string b)
+{
+   if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
+   {
+      getValue(a) | getValue(b);
+   }
+   else
+   {
+      if (bitnumberof(a) == bitnumberof(b))
+      {
+         getValue(a) | getValue(b);
+      }
+   }
+   return true;
+}
+bool _xor(string a, string b)
+{
+   if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
+   {
+      getValue(a) ^ getValue(b);
+   }
+   else
+   {
+      if (bitnumberof(a) == bitnumberof(b))
+      {
+         getValue(a) ^ getValue(b);
+      }
+   }
+   return true;
+}
+bool _not(string a)
+{
+   ~getValue(a);
+   return true;
+}
+bool shl(string a, string b)
+{
+   getValue(a) << getValue(b);
+   return true;
+}
+bool shr(string a, string b)
+{
+   getValue(a) >> getValue(b);
+   return true;
+}
+
+bool cmp(string a, string b)
+{
+   if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
+   {
+      if (getValue(a) == getValue(b))
+      {
+         zf = true;
+         cf = false;
+      }
+      else if (getValue(a) < getValue(b))
+      {
+         zf = false;
+         cf = true;
+      }
+      else if (getValue(a) > getValue(b))
+      {
+         zf = false;
+         cf = false;
+      }
+   }
+   else
+   {
+      if (bitnumberof(a) == bitnumberof(b))
+      {
+         if (getValue(a) == getValue(b))
+         {
+            zf = true;
+            cf = false;
+         }
+         else if (getValue(a) < getValue(b))
+         {
+            zf = false;
+            cf = true;
+         }
+         else if (getValue(a) > getValue(b))
+         {
+            zf = false;
+            cf = false;
+         }
+      }
+   }
+   return true;
+}
 //If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
 
 //Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
@@ -945,7 +1082,7 @@ void je(string a)
 {
    if (zf == true)
    { //Check ZF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 
@@ -954,7 +1091,7 @@ void jz(string a)
 {
    if (zf == true)
    { //Check ZF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 //JNE       //signed and unsigned        //Jump not equal
@@ -962,7 +1099,7 @@ void jne(string a)
 {
    if (zf == false)
    { //Check ZF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 //JNZ       //signed and unsigned        //Jump not zero
@@ -970,7 +1107,7 @@ void jnz(string a)
 {
    if (zf == false)
    { //Check ZF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 
@@ -981,7 +1118,7 @@ void ja(string a)
 {
    if (cf == true && zf == true)
    { //Check CF AND ZF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 //JNBE      //unsigned data used        //Jump Not Below/Equal
@@ -989,7 +1126,7 @@ void jnbe(string a)
 {
    if (cf == false && zf == false)
    { //Check CF AND ZF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 //JAE                                   //Jump Above/Equal
@@ -997,7 +1134,7 @@ void jae(string a)
 {
    if (cf == true)
    { //Check CF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 //JNB      //unsigned data used         //Jump Not Below
@@ -1005,7 +1142,7 @@ void jnb(string a)
 {
    if (cf == false)
    { //Check CF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 
@@ -1014,7 +1151,7 @@ void jb(string a)
 {
    if (cf == true)
    { //Check CF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 //JNAE      //unsigned data used        //Jump Not Above/Equal
@@ -1022,7 +1159,7 @@ void jnae(string a)
 {
    if (cf == false)
    { //Check CF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 
@@ -1031,7 +1168,7 @@ void jbe(string a)
 {
    if (cf == true)
    { //Check CF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 
@@ -1042,7 +1179,7 @@ void jc(string a)
 {
    if (cf == true)
    { //Check CF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
 //JNC       //special       //Jump if no carry
@@ -1050,10 +1187,6 @@ void jnc(string a)
 {
    if (cf == false)
    { //Check CF Flag
-      return
+      PC = labels[strip(a)] - 1;
    }
 }
-
-// NOTES
-// dont confuse 1<<8 and 2<<8
-*/
