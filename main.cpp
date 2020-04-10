@@ -66,7 +66,7 @@ map<string, pair<string, int>> variables; // myvar,type,memory ref, myvar,db/dw,
 int variablestartpoint = 0; // it should be updated wrt sayac, until int20h
 
 // functions
-void strip(string &str);
+string strip(string &str);
 void lowerCase(string &str);
 
 bool mov(string a, string b);
@@ -74,11 +74,20 @@ bool add(string a, string b);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
+// ERROR message
+void error(string errormsg)
+{
+   cout << "ERROR: " << errormsg << endl;
+   // exit(1);   // comment it to avoid from stopping program
+}
+
+int sayac = -1; // !
+void printmemo();
 int main(int argc, char *argv[])
 {
-   *pax = 1;
-   *pbx = 7;
-   *pah = 3;
+   // *pax = 1;
+   // *pbx = 7;
+   // *pah = 3;
 
    // 1. Read instruction lines
 
@@ -96,7 +105,7 @@ int main(int argc, char *argv[])
       return 0;
    }
    string line;
-   int sayac = -1;
+
    bool vardefstart = false;
 
    while (getline(file, line, '\n'))
@@ -162,7 +171,7 @@ int main(int argc, char *argv[])
             variablestartpoint++;
          }
          else if (type == "dw")
-         {  // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
+         { // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
             memory[variablestartpoint] = asd;
             memory[variablestartpoint + 1] = asd >> 8; // get upper via shift 8 bit right
 
@@ -257,7 +266,8 @@ int main(int argc, char *argv[])
    cout << "Program starts execution" << endl;
    while (PC != commands.size())
    {
-
+      cout << endl
+           << "line: " << PC << endl;
       string currcmd = commands[PC];
       istringstream iss(currcmd);
       string ins;
@@ -271,7 +281,7 @@ int main(int argc, char *argv[])
          string first;
          string second;
          getline(iss, first, ',');
-         getline(iss, second,',');
+         getline(iss, second, ',');
          // iss >> second;
          strip(first);
          strip(second);
@@ -300,17 +310,21 @@ int main(int argc, char *argv[])
          // else if(ins=="div"){
          //    div(first,second);
          // }
-         // else if(ins=="xor"){
-         //    xor(first,second);
+         // else if (ins == "xor")
+         // {
+         //    _xor(first, second);
          // }
-         // else if(ins=="or"){
-         //    or(first,second);
+         // else if (ins == "or")
+         // {
+         //    _or(first, second);
          // }
-         // else if(ins=="and"){
-         //    add(first,second);
+         // else if (ins == "and")
+         // {
+         //    _and(first, second);
          // }
-         // else if(ins=="not"){
-         //    not(first,second);
+         // else if (ins == "not")
+         // {
+         //    _not(first);
          // }
          // else if(ins=="rcl"){
          //    rcl(first,second);
@@ -318,11 +332,13 @@ int main(int argc, char *argv[])
          // else if(ins=="rcr"){
          //    rcr(first,second);
          // }
-         // else if(ins=="shl"){
-         //    shl(first,second);
+         // else if (ins == "shl")
+         // {
+         //    shl(first, second);
          // }
-         // else if(ins=="shr"){
-         //    shr(first,second);
+         // else if (ins == "shr")
+         // {
+         //    shr(first, second);
          // }
          // else if(ins=="push"){
          //    push(first,second);
@@ -333,47 +349,61 @@ int main(int argc, char *argv[])
          // else if(ins=="nop"){
          //    nop(first,second);
          // }
-         // else if(ins=="cmp"){
-         //    cmp(first,second);
+         // else if (ins == "cmp")
+         // {
+         //    cmp(first);
          // }
-         // else if(ins=="jz"){
-         //    jz(first,second);
+         // else if (ins == "jz")
+         // {
+         //    jz(first);
          // }
-         // else if(ins=="jnz"){
-         //    jnz(first,second);
+         // else if (ins == "jnz")
+         // {
+         //    jnz(first);
          // }
-         // else if(ins=="je"){
-         //    je(first,second);
+         // else if (ins == "je")
+         // {
+         //    je(first);
          // }
-         // else if(ins=="jne"){
-         //    jne(first,second);
+         // else if (ins == "jne")
+         // {
+         //    jne(first);
          // }
-         // else if(ins=="ja"){
-         //    ja(first,second);
+         // else if (ins == "ja")
+         // {
+         //    ja(first);
          // }
-         // else if(ins=="jae"){
-         //    jae(first,second);
+         // else if (ins == "jae")
+         // {
+         //    jae(first);
          // }
-         // else if(ins=="jb"){
-         //    jb(first,second);
+         // else if (ins == "jb")
+         // {
+         //    jb(first);
          // }
-         // else if(ins=="jbe"){
-         //    jbe(first,second);
+         // else if (ins == "jbe")
+         // {
+         //    jbe(first);
          // }
-         // else if(ins=="jnae"){
-         //    jnae(first,second);
+         // else if (ins == "jnae")
+         // {
+         //    jnae(first);
          // }
-         // else if(ins=="jnb"){
-         //    jnb(first,second);
+         // else if (ins == "jnb")
+         // {
+         //    jnb(first);
          // }
-         // else if(ins=="jnbe"){
-         //    jnbe(first,second);
+         // else if (ins == "jnbe")
+         // {
+         //    jnbe(first);
          // }
-         // else if(ins=="jnc"){
-         //    jnc(first,second);
+         // else if (ins == "jnc")
+         // {
+         //    jnc(first);
          // }
-         // else if(ins=="jc"){
-         //    jc(first,second);
+         // else if (ins == "jc")
+         // {
+         //    jc(first);
          // }
          // else if(ins=="push"){
          //    push(first,second);
@@ -401,6 +431,8 @@ int main(int argc, char *argv[])
       //    cout<<substr;
       //    result.push_back(substr);
       // }
+      print_16bitregs();
+      printmemo();
 
       PC++;
    }
@@ -421,15 +453,23 @@ int main(int argc, char *argv[])
    //     }
    //
    // }
-   cout<<endl<<"registers:"<<endl;
+   cout << endl
+        << "registers:" << endl;
    print_16bitregs();
 
-   cout<<endl<<"memo:"<<endl;
-   for(int i=6*(sayac+2);i<variablestartpoint;i++){
-      cout<<"memo["<<i<<"] : "<<0+memory[i]<<endl;
-   }
+   cout << endl
+        << "memo:" << endl;
+   printmemo();
    // print_hex(*pah);
    // print_hex(*pal);
+}
+
+void printmemo()
+{
+   for (int i = 6 * (sayac + 2); i < variablestartpoint; i++)
+   {
+      cout << "memo[" << i << "] : " << 0 + memory[i] << endl;
+   }
 }
 
 template <class regtype>
@@ -461,20 +501,20 @@ void print_hex(datatype x)
 
 void print_16bitregs()
 {
-   printf("AX:%04x\n", *pax);
-   printf("BX:%04x\n", bx);
-   printf("CX:%04x\n", cx);
-   printf("DX:%04x\n", *pdx);
-   printf("DI:%04x\n", di);
-   printf("SI:%04x\n", si);
-   printf("SP:%04x\n", sp);
-   printf("BP:%04x\n", bp);
+   printf("AX:%04x %d\n", *pax, *pax);
+   printf("BX:%04x %d\n", bx, bx);
+   printf("CX:%04x %d\n", cx, cx);
+   printf("DX:%04x %d\n", *pdx, *pdx);
+   printf("DI:%04x %d\n", di, di);
+   printf("SI:%04x %d\n", si, si);
+   printf("SP:%04x %d\n", sp, sp);
+   printf("BP:%04x %d\n", bp, bp);
 }
 
 // https://stackoverflow.com/questions/83439/remove-spaces-from-stdstring-in-c
 // https://en.cppreference.com/w/cpp/algorithm/remove
 // strip deletes spaces according to left side and right side
-void strip(string &str)
+string strip(string &str)
 {
    string newstr;
    int start = 0, end = str.length() - 1;
@@ -501,9 +541,18 @@ void strip(string &str)
       }
    }
    if (end >= start)
+   {
       str = str.substr(start, end - start + 1);
+      newstr= str;
+      return newstr;
+   }
+
    else
+   {
       str = "";
+      newstr= str;
+      return newstr;
+   }
 }
 
 void lowerCase(string &str)
@@ -608,15 +657,15 @@ int bitnumberof(string operand)
    {
       return 16;
    }
-else if (variables.count(temp)){
-   return variables[temp].first=="db"?8:16;
-}
+   else if (variables.count(temp))
+   {
+      return variables[temp].first == "db" ? 8 : 16;
+   }
    else
    //   if(  )   TODO add imme,offst,...
    {
       return tointeger(operand) > (2 << 8) ? 16 : 8; // i am not sure about immediate values
    }
-
 
    // reg
    // offset
@@ -656,9 +705,10 @@ string typeofoperand(string operand)
    {
       return "offset";
    }
-else if (variables.count(temp)){
-   return variables[temp].first;
-}
+   else if (variables.count(temp))
+   {
+      return variables[temp].first;
+   }
    //   if(  )   TODO add imme,offst,...
    else
    {
@@ -690,42 +740,41 @@ int getValue(string operand)
    }
    else if (temp[0] == '[' && temp[temp.length() - 1] == ']') // bu da bir alttakiyle aynı sanırım
    {
-      string innerstr=temp.substr(1,temp.length()-2);
+      string innerstr = temp.substr(1, temp.length() - 2);
       strip(innerstr);
-      int inval= getValue(innerstr);
-      return  memory[inval];
+      int inval = getValue(innerstr);
+      return memory[inval];
    }
    else if (temp[0] == 'b' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
    {
-      string innerstr=bwsiztemp.substr(1,bwsiztemp.length()-2);
+      string innerstr = bwsiztemp.substr(1, bwsiztemp.length() - 2);
       strip(innerstr);
-      int inval= getValue(innerstr);
+      int inval = getValue(innerstr);
       return memory[inval];
    }
    else if (temp[0] == 'w' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
    {
-      string innerstr=bwsiztemp.substr(1,bwsiztemp.length()-2);
+      string innerstr = bwsiztemp.substr(1, bwsiztemp.length() - 2);
       strip(innerstr);
-      int inval= getValue(innerstr);
-      cout<<"debug: "<<memory[inval+1]*(1<<8) << "   "<<0+ memory[inval]<<endl;
-      return memory[inval+1]*(1<<8)+ memory[inval];
-      
+      int inval = getValue(innerstr);
+      cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
+      return memory[inval + 1] * (1 << 8) + memory[inval];
    }
    else if (temp.find("offset") == 0)
    {
-      string tt=operand.substr(6,temp.length()-6);  // use operand due to variable can be UPPERCASE
+      string tt = operand.substr(6, temp.length() - 6); // use operand due to variable can be UPPERCASE
       strip(tt);
       return variables[tt].second;
    }
    else if (variables.count(temp))
    {
-      if (variables[temp].first == "dw")
+      if (variables[temp].first == "db")
       {
-         return memory[variables[temp].second] ;
+         return memory[variables[temp].second];
       }
-      else if (variables[temp].first == "db")
+      else if (variables[temp].first == "dw")
       {
-         return memory[variables[temp].second+1]*(1<<8)+ memory[variables[temp].second] ;
+         return memory[variables[temp].second + 1] * (1 << 8) + memory[variables[temp].second];
       }
       else
       {
@@ -737,150 +786,407 @@ int getValue(string operand)
    else
    //   if(  )   TODO add imme,offst,...
    {
-      return tointeger(operand) ; // i am not sure about immediate values
+      return tointeger(operand); // i am not sure about immediate values
    }
 }
-   // reg
-   // offset
-   // value  b w
-   // memory
-   // immediate
-   // variable
 
-   //    b hesapla dön
-
-   // }
-
-   // Instruction functions
-   bool mov(string a, string b) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
+unsigned char &getMemoRef(string operand)
+{
+   strip(operand);                                       // operand is pure version of input
+   string temp = operand;                                // temp is lower cased version
+   lowerCase(temp);                                      // w [ 1235h ]
+   string bwsiztemp = temp.substr(1, temp.length() - 1); // bwsiz is cutted first char to look b,w
+   strip(bwsiztemp);                                     // [ 1325h ]
+   if (temp[0] == '[' && temp[temp.length() - 1] == ']') // bu da bir alttakiyle aynı sanırım
    {
-      int valb = getValue(b);
-      // cout << "sayi:" << converter16bit.count("ax") << endl;
-      // cout << "sayi:" << converter16bit.count("konu") << endl;
-      cout <<endl<< a << "<-" << b << endl;
-      // a = "ax";
-      // (*(converter16bit[b])) = (*(converter16bit[a]));
-      // *(converter16bit[a]) = 55;
-      // print_hex(*(converter16bit[a]));
-      // print_hex(*(converter8bit[b]));
-
-cout<<"value - bit - type"<<endl<<getValue(a)<<" "<< bitnumberof(a) <<"  "<< typeofoperand(a) <<endl
-<<getValue(b)<<"   "<< bitnumberof(b) <<"  "<< typeofoperand(b) <<endl;
-
-
-      // cout << "a: " << a << endl;
-      // cout << "b: " << b << endl;
-
-      // if(a[a.length()-1] == 'x' && b[b.length()-1] == 'x')
-
-      return true;
+      string innerstr = temp.substr(1, temp.length() - 2);
+      strip(innerstr);
+      int inval = getValue(innerstr);
+      return memory[inval];
    }
-
-   // bool add(string a, string b)
-   // {
-   // }
-
-
-
-bool cmp(indexOfcmp){
-    // if a=b
+   else if (temp[0] == 'b' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      string innerstr = bwsiztemp.substr(1, bwsiztemp.length() - 2);
+      strip(innerstr);
+      int inval = getValue(innerstr);
+      return memory[inval];
+   }
+   else if (temp[0] == 'w' && bwsiztemp[0] == '[' && temp[temp.length() - 1] == ']')
+   {
+      string innerstr = bwsiztemp.substr(1, bwsiztemp.length() - 2);
+      strip(innerstr);
+      int inval = getValue(innerstr);
+      cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
+      return memory[inval];
+   }
+   else
+   {
+      cout << "ERROR wrong memory referance" << endl;
+      exit(1);
+   }
 }
+// reg
+// offset
+// value  b w
+// memory
+// immediate
+// variable
+
+//    b hesapla dön
+
+// }
+
+bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
+{
+   cout << "value - bit - type" << endl
+        << getValue(dest) << " " << bitnumberof(dest) << "  " << typeofoperand(dest) << endl
+        << getValue(src) << "   " << bitnumberof(src) << "  " << typeofoperand(src) << endl;
+   string typedest = typeofoperand(dest);
+   string typesrc = typeofoperand(src);
+
+   int bitdest = bitnumberof(dest);
+   int bitsrc = bitnumberof(src);
+
+   if (typedest == "reg")
+   {
+      strip(dest);
+
+      if (typesrc == "value" || typesrc == "offset")
+      { // bit önemsiz olanlar
+
+         if (bitdest == 16)
+         {
+            *(converter16bit[dest]) = getValue(src);
+         }
+
+         else if (bitdest == 8)
+         {
+            if (getValue(src) < 1 << 8)
+               *(converter8bit[dest]) = getValue(src);
+            else
+            {
+               error("error big number to 1 byte");
+            }
+         }
+         else
+         {
+            error("errorr");
+         }
+      }
+      else
+      {
+
+         if (bitdest == 16 && bitsrc == 16)
+         {
+            *(converter16bit[dest]) = getValue(src);
+         }
+
+         else if (bitdest == 8 && bitsrc == 8)
+         {
+            *(converter8bit[dest]) = getValue(src);
+         }
+         else
+         {
+            error("errorr");
+         }
+      }
+   }
+   else if (typedest == "memory")
+   {
+      // strip(dest);
+
+      if (typesrc == "value" || typesrc == "offset")
+      { // bit önemsiz olanlar
+
+         if (bitdest == 16) // dw
+         {
+            if (getValue(src) < 1 << 16)
+            {
+               getMemoRef(dest) = getValue(src);
+               *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
+            }
+            else
+            {
+               error("error big number to 1 byte");
+            }
+         }
+
+         else if (bitdest == 8) // db
+         {
+            if (getValue(src) < 1 << 8)
+               getMemoRef(dest) = getValue(src);
+            else
+            {
+               error("error big number to 1 byte");
+            }
+         }
+         else
+         {
+            error("wrong bit dest");
+         }
+      }
+      else
+      {
+
+         if (bitdest == 16 && bitsrc == 16)
+         {
+            getMemoRef(dest) = getValue(src);
+            // cout<<"asdas: "<<0+&getMemoRef(dest)<<endl;
+            *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
+         }
+
+         else if (bitdest == 8 && bitsrc == 8)
+         {
+            getMemoRef(dest) = getValue(src);
+         }
+         else
+         {
+            error("bit problems at memory ref");
+         }
+      }
+   }
+   else
+   {
+      error("ERROR wrong type of dest");
+   }
+   return true;
+}
+
+// bool add(string a, string b)
+// {
+// }
+
+// NOTES
+// dont confuse 1<<8 and 2<<8
+
+// bool cmp(indexOfcmp)
+// {
+//    // if a=b
+// }
 
 //If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
-
 
 //Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
 
 //JE     //signed and unsigned      //Jump equal
-void je(string a, indexOfje){
-    if(zf == true){                       //Check ZF Flag
-        return
-    }
+bool _and(string a, string b)
+{
+   if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
+   {
+      getValue(a) & getValue(b);
+   }
+   else
+   {
+      if (bitnumberof(a) == bitnumberof(b))
+      {
+         getValue(a) & getValue(b);
+      }
+   }
+   return true;
 }
-    
+bool _or(string a, string b)
+{
+   if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
+   {
+      getValue(a) | getValue(b);
+   }
+   else
+   {
+      if (bitnumberof(a) == bitnumberof(b))
+      {
+         getValue(a) | getValue(b);
+      }
+   }
+   return true;
+}
+bool _xor(string a, string b)
+{
+   if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
+   {
+      getValue(a) ^ getValue(b);
+   }
+   else
+   {
+      if (bitnumberof(a) == bitnumberof(b))
+      {
+         getValue(a) ^ getValue(b);
+      }
+   }
+   return true;
+}
+bool _not(string a)
+{
+   ~getValue(a);
+   return true;
+}
+bool shl(string a, string b)
+{
+   getValue(a) << getValue(b);
+   return true;
+}
+bool shr(string a, string b)
+{
+   getValue(a) >> getValue(b);
+   return true;
+}
+
+bool cmp(string a, string b)
+{
+   if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
+   {
+      if (getValue(a) == getValue(b))
+      {
+         zf = true;
+         cf = false;
+      }
+      else if (getValue(a) < getValue(b))
+      {
+         zf = false;
+         cf = true;
+      }
+      else if (getValue(a) > getValue(b))
+      {
+         zf = false;
+         cf = false;
+      }
+   }
+   else
+   {
+      if (bitnumberof(a) == bitnumberof(b))
+      {
+         if (getValue(a) == getValue(b))
+         {
+            zf = true;
+            cf = false;
+         }
+         else if (getValue(a) < getValue(b))
+         {
+            zf = false;
+            cf = true;
+         }
+         else if (getValue(a) > getValue(b))
+         {
+            zf = false;
+            cf = false;
+         }
+      }
+   }
+   return true;
+}
+//If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
+
+//Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
+
+//JE     //signed and unsigned      //Jump equal
+void je(string a)
+{
+   if (zf == true)
+   { //Check ZF Flag
+      PC = labels[strip(a)] - 1;
+   }
+}
+
 //JZ      //signed and unsigned      //Jump zero
-void jz(string a, indexOfje){
-    if(zf == true){                       //Check ZF Flag
-        return
-    }
+void jz(string a)
+{
+   if (zf == true)
+   { //Check ZF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 //JNE       //signed and unsigned        //Jump not equal
-void jne(string a, indexOfje){
-    if(zf == false){                       //Check ZF Flag
-        return
-    }
+void jne(string a)
+{
+   if (zf == false)
+   { //Check ZF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 //JNZ       //signed and unsigned        //Jump not zero
-void jnz(string a, indexOfje){
-    if(zf == false){                       //Check ZF Flag
-        return
-    }
+void jnz(string a)
+{
+   if (zf == false)
+   { //Check ZF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 
 //Following are the conditional jump instructions used on unsigned data used for logical operations − (Unsigned)
 
 //JA        //unsigned data used        //Jump Above
-void ja(string a, indexOfje){
-    if(cf == true && zf == true){                       //Check CF AND ZF Flag
-        return
-    }
+void ja(string a)
+{
+   if (cf == true && zf == true)
+   { //Check CF AND ZF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 //JNBE      //unsigned data used        //Jump Not Below/Equal
-void jnbe(string a, indexOfje){
-    if(cf == false && zf == false){                       //Check CF AND ZF Flag
-        return
-    }
+void jnbe(string a)
+{
+   if (cf == false && zf == false)
+   { //Check CF AND ZF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 //JAE                                   //Jump Above/Equal
-void jae(string a, indexOfje){
-    if(cf == true){                       //Check CF Flag
-        return
-    }
+void jae(string a)
+{
+   if (cf == true)
+   { //Check CF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 //JNB      //unsigned data used         //Jump Not Below
-void jnb(string a, indexOfje){
-    if(cf == false){                       //Check CF Flag
-        return
-    }
+void jnb(string a)
+{
+   if (cf == false)
+   { //Check CF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 
 //JB        //unsigned data used        //Jump Below
-void jb(string a, indexOfje){
-    if(cf == true){                       //Check CF Flag
-        return
-    }
+void jb(string a)
+{
+   if (cf == true)
+   { //Check CF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 //JNAE      //unsigned data used        //Jump Not Above/Equal
-void jnae(string a, indexOfje){
-    if(cf == false){                       //Check CF Flag
-        return
-    }
+void jnae(string a)
+{
+   if (cf == false)
+   { //Check CF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 
 //JBE        //unsigned data used        //Jump Below/Equa
-void jbe(string a, indexOfje){
-    if(cf == true){                       //Check CF Flag
-        return
-    }
+void jbe(string a)
+{
+   if (cf == true)
+   { //Check CF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
-
 
 //The following conditional jump instructions have special uses and check the value of flags
 
 //JC      //special      //Jump if carry
-void jc(string a, indexOfje){
-    if(cf == true){                       //Check CF Flag
-        return
-    }
+void jc(string a)
+{
+   if (cf == true)
+   { //Check CF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
 //JNC       //special       //Jump if no carry
-void jnc(string a, indexOfje){
-    if(cf == false ){                       //Check CF Flag
-        return
-    }
+void jnc(string a)
+{
+   if (cf == false)
+   { //Check CF Flag
+      PC = labels[strip(a)] - 1;
+   }
 }
-
-
-   // NOTES
-   // dont confuse 1<<8 and 2<<8 
-
