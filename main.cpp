@@ -368,9 +368,6 @@ int main(int argc, char *argv[])
          // {
          //    shr(first, second);
          // }
-         // else if(ins=="nop"){
-         //    nop(first,second);
-         // }
          // else if(ins=="int20h"){
          //    int20h(first,second);
          // }
@@ -380,7 +377,7 @@ int main(int argc, char *argv[])
          string first;
          getline(iss, first, ',');
          strip(first);
-         cout << "1: " << ins << " Par1: " << first << endl;
+         cout << "Ins: " << ins << " Dest: " << first << endl;
 
          if (ins == "push")
          {
@@ -442,6 +439,10 @@ int main(int argc, char *argv[])
          else if (ins == "jc")
          {
             jc(first);
+         }
+         else if (ins == "nop")
+         {
+            cout<<"NOP - continue"<<endl;
          }
       }
 

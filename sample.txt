@@ -8,6 +8,7 @@ push 36
 push 3435
 push 35554    
 mov bx, 0045h
+nop
 pop ax
 int 20h
 code ends
