@@ -309,34 +309,46 @@ int main(int argc, char *argv[])
           else if(ins=="and"){
              _and(first,second);
           }
-          else if(ins=="not"){
-             _not(first);
+         
+          else if(ins=="rcl"){
+             rcl(first,second);
           }
-         // else if(ins=="rcl"){
-         //    rcl(first,second);
-         // }
-         // else if(ins=="rcr"){
-         //    rcr(first,second);
-         // }
+          else if(ins=="rcr"){
+             rcr(first,second);
+          }
           else if(ins=="shl"){
              shl(first,second);
           }
           else if(ins=="shr"){
              shr(first,second);
           }
+         // else if(ins=="nop"){
+         //    nop(first,second);
+         // }
+          else if(ins=="cmp"){
+             cmp(first, second);
+          }
+         
          // else if(ins=="push"){
          //    push(first,second);
          // }
          // else if(ins=="pop"){
          //    pop(first,second);
          // }
-         // else if(ins=="nop"){
-         //    nop(first,second);
+         // else if(ins=="int20h"){
+         //    int20h(first,second);
          // }
-          else if(ins=="cmp"){
-             cmp(first);
+      }
+      else
+      {
+         string first;
+         getline(iss, first, ',');
+         strip(first);
+         cout << "1: " << ins << " Par1: " << first << endl;
+         if(ins=="not"){
+             _not(first);
           }
-          else if(ins=="jz"){
+         else if(ins=="jz"){
              jz(first);
           }
           else if(ins=="jnz"){
@@ -375,22 +387,6 @@ int main(int argc, char *argv[])
           else if(ins=="jc"){
              jc(first);
           }
-         // else if(ins=="push"){
-         //    push(first,second);
-         // }
-         // else if(ins=="pop"){
-         //    pop(first,second);
-         // }
-         // else if(ins=="int20h"){
-         //    int20h(first,second);
-         // }
-      }
-      else
-      {
-         string first;
-         getline(iss, first, ',');
-         strip(first);
-         cout << "1: " << ins << " Par1: " << first << endl;
       }
 
       // vector<string> result;
@@ -817,13 +813,71 @@ bool _not(string a){
    return true;
 }
 bool shl(string a, string b){
-   getValue(a) << getValue(b);
+   int temp = getValue(a) << getValue(b);
+      mov(a, temp);
    return true;
 }
 bool shr(string a, string b){
    getValue(a) >> getValue(b);
    return true;
 }
+bool rcl(string a, string b){
+   int value = getValue(a);
+   int lengthOfArr = bitnumberof(a);
+   int binaryArr[lengthOfArr-1];
+   for(int i = 0; value > 0; i++){
+      binaryArr[i]=value%2;
+      value = value/2;
+   }
+   for(int i=0; i<lengthOfArr-1; i++){
+      int temp = binaryArr[i+1];
+      binaryArr[i+1]= binaryArr[i];
+      binary[i]=temp;
+   }
+   int total=0;
+   int i = 0;
+   if(i==0){
+      total = binaryArr[0]*2;
+      i++;
+   }
+   for(i = 1; i<lengthOfArr; i++){
+      int two = 1;
+      for(int j=0; j<i; j++){
+         two = 2*two;
+      }
+      total += binaryArr[i]*two; 
+   }
+   mov(a, total);
+}
+bool rcr(string a, string b){
+   int value = getValue(a);
+   int lengthOfArr = bitnumberof(a);
+   int binaryArr[lengthOfArr-1];
+   for(int i = 0; value > 0; i++){
+      binaryArr[i]=value%2;
+      value = value/2;
+   }
+   for(int i=0; i<lengthOfArr-1; i++){
+      int temp = binaryArr[i];
+      binaryArr[i]= binaryArr[i+1];
+      binary[i+1]=temp;
+   }
+   int total=0;
+   int i = 0;
+   if(i==0){
+      total = binaryArr[0]*2;
+      i++;
+   }
+   for(i = 1; i<lengthOfArr; i++){
+      int two = 1;
+      for(int j=0; j<i; j++){
+         two = 2*two;
+      }
+      total += binaryArr[i]*two; 
+   }
+      mov(a, total);
+}
+
 
 bool cmp(string a, string b){
    if(typeofoperand(a) == "value" || typeofoperand(b) == "value"){
@@ -856,7 +910,6 @@ bool cmp(string a, string b){
 }
 
 //If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
-
 
 //Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
 
