@@ -12,7 +12,6 @@ template <class datatype>
 void print_bits(datatype x);
 template <class datatype>
 void print_hex(datatype x);
-template <class regtype>
 void print_16bitregs();
 void printflags();
 void printmemo();
@@ -110,8 +109,12 @@ int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 // ERROR message
 void error(string errormsg)
 {
-   cout << "ERROR: " << errormsg << endl;
-   if (!DebugMode) // in debug mode, it won't crash at error to get more info
+   cout << "Error" << endl;
+   if (DebugMode) // in debug mode, it won't crash at error to get more info
+   {
+      cout << errormsg << endl;
+   }
+   else
    {
       exit(1); // comment it to avoid from stopping program
    }
@@ -677,9 +680,10 @@ map<string, unsigned char *> converter8bit = {
     {"dl", pdl},
     {"dh", pdh}};
 
+// returns bit number of operand type
 int bitnumberof(string operand)
 {
-   strip(operand);
+   strip(operand); // strip whitespaces from left and right side
    string temp = operand;
    lowerCase(temp); // w [ 1235h ]
    string bwsiztemp = temp.substr(1, temp.length() - 1);
@@ -713,20 +717,12 @@ int bitnumberof(string operand)
       return variables[temp].first == "db" ? 8 : 16;
    }
    else
-   //   if(  )   TODO add imme,offst,...
    {
-      return tointeger(operand) > (2 << 8) ? 16 : 8; // i am not sure about immediate values
+      return tointeger(operand) > (1 << 8) ? 16 : 8; // i am not sure about immediate values
    }
-
-   // reg
-   // offset
-   // value  b w
-   // memory
-   // immediate
-   // variable
 }
 
-// returns "reg" "memory" "offset" "offset" "dw" "db"
+// returns "reg" "memory" "offset" "offset" "dw" "db" "value"
 string typeofoperand(string operand)
 {
    strip(operand);
@@ -750,31 +746,21 @@ string typeofoperand(string operand)
    {
       return "memory";
    }
-   // else if(temp.find("offset")!=string::npos){
-   //    return   "offset";
-   // }
    else if (temp.find("offset") == 0)
    {
       return "offset";
    }
    else if (variables.count(temp))
    {
-      return variables[temp].first; // "dw"   or "db" !!!
+      return variables[temp].first; // "dw"   or "db"
    }
-   //   if(  )   TODO add imme,offst,...
    else
    {
       return "value";
    }
-
-   // reg
-   // offset
-   // value  b w
-   // memory
-   // immediate
 }
 
-//returns integer value of operand, usally used for right operand
+//returns integer value of operand, usually used for right operand
 int getValue(string operand)
 {
    strip(operand);                                       // operand is pure version of input
@@ -790,7 +776,7 @@ int getValue(string operand)
    {
       return *(converter8bit[temp]);
    }
-   else if (temp[0] == '[' && temp[temp.length() - 1] == ']') // bu da bir alttakiyle aynı sanırım
+   else if (temp[0] == '[' && temp[temp.length() - 1] == ']')
    {
       string innerstr = temp.substr(1, temp.length() - 2);
       strip(innerstr);
@@ -830,22 +816,20 @@ int getValue(string operand)
       }
       else
       {
-         cout << "Error !! ??";
-         exit(1);
+         error("at getValue ");
       }
    }
-
    else
-   //   if(  )   TODO add imme,offst,...
    {
       if (tointeger(operand) > (1 << 16) - 1)
       {
          error("too big number");
       }
-      return tointeger(operand); // i am not sure about immediate values
+      return tointeger(operand);
    }
 }
 
+// return reference of memory to use easily for assignment etc.
 unsigned char &getMemoRef(string operand)
 {
    strip(operand);                                       // operand is pure version of input
@@ -853,7 +837,7 @@ unsigned char &getMemoRef(string operand)
    lowerCase(temp);                                      // w [ 1235h ]
    string bwsiztemp = temp.substr(1, temp.length() - 1); // bwsiz is cutted first char to look b,w
    strip(bwsiztemp);                                     // [ 1325h ]
-   if (temp[0] == '[' && temp[temp.length() - 1] == ']') // bu da bir alttakiyle aynı sanırım
+   if (temp[0] == '[' && temp[temp.length() - 1] == ']')
    {
       string innerstr = temp.substr(1, temp.length() - 2);
       strip(innerstr);
@@ -877,21 +861,11 @@ unsigned char &getMemoRef(string operand)
    }
    else
    {
-      cout << "ERROR wrong memory referance" << endl;
-      exit(1);
+      error("ERROR wrong memory referance");
    }
 }
-// reg
-// offset
-// value  b w
-// memory
-// immediate
-// variable
 
-//    b hesapla dön
-
-// }
-
+// MOV ins
 bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
 {
    if (DebugMode)
@@ -912,7 +886,7 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
       strip(dest);
 
       if (typesrc == "value" || typesrc == "offset")
-      { // bit önemsiz olanlar
+      { // bit independent, so no need compare bit sizes
 
          if (bitdest == 16)
          {
@@ -930,7 +904,7 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
          }
          else
          {
-            error("errorr");
+            error("error");
          }
       }
       else
@@ -947,13 +921,12 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
          }
          else
          {
-            error("errorr");
+            error("error");
          }
       }
    }
    else if (typedest == "memory")
    {
-      // strip(dest);
 
       if (typesrc == "value" || typesrc == "offset")
       { // bit önemsiz olanlar
@@ -1029,6 +1002,7 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
    return true;
 }
 
+// PUSH
 bool push(string operand)
 {
 
@@ -1056,6 +1030,8 @@ bool push(string operand)
    sp -= 2;
    return true;
 }
+
+// POP
 bool pop(string operand)
 {
 
@@ -1078,14 +1054,7 @@ bool pop(string operand)
    return true;
 }
 
-// NOTES
-// dont confuse 1<<8 and 2<<8
-
-//If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
-
-//Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
-
-//JE     //signed and unsigned      //Jump equal
+// AND
 bool _and(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
@@ -1101,6 +1070,8 @@ bool _and(string a, string b)
    }
    return true;
 }
+
+// OR
 bool _or(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
@@ -1111,13 +1082,13 @@ bool _or(string a, string b)
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         // cout<<a<<"-"<<b<<endl;
-         // cout<<"asdas"<<(getValue(a) | getValue(b))<<endl;
          mov(a, to_string(getValue(a) | getValue(b)));
       }
    }
    return true;
 }
+
+// XOR
 bool _xor(string a, string b)
 {
    if (getValue(a) ^ getValue(b) == 0)
@@ -1138,12 +1109,16 @@ bool _xor(string a, string b)
 
    return true;
 }
+
+// NOT
 bool _not(string a)
 {
 
    mov(a, to_string(~getValue(a)));
    return true;
 }
+
+// SHL
 bool shl(string a, string b)
 {
    int temp = getValue(a) << getValue(b);
@@ -1151,6 +1126,8 @@ bool shl(string a, string b)
    cf = (temp / ((1 << bitnumberof(a)))) % 2;
    return true;
 }
+
+// SHR
 bool shr(string a, string b)
 {
    int temp = getValue(a) >> getValue(b);
@@ -1159,6 +1136,7 @@ bool shr(string a, string b)
    return true;
 }
 
+// CMP
 bool cmp(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
@@ -1202,6 +1180,7 @@ bool cmp(string a, string b)
    }
    return true;
 }
+
 //If some specified condition is satisfied in conditional jump, the control flow is transferred to a target instruction. There are numerous conditional jump instructions depending upon the condition and data.
 
 //Following are the conditional jump instructions used on signed data used for arithmetic operations − (Signed)
@@ -1301,6 +1280,7 @@ void jbe(string a)
       PC = labels[strip(a)] - 1;
    }
 }
+
 // http://faydoc.tripod.com/cpu/ja.htm
 //The following conditional jump instructions have special uses and check the value of flags
 
@@ -1407,6 +1387,7 @@ bool rcr(string a, string b)
    cf = (va >> (bitnumberof(b) - 1)) % 2;
 }
 
+// INT
 bool _int(string operand)
 {
    strip(operand);
@@ -1456,6 +1437,7 @@ bool _int(string operand)
    return true;
 }
 
+// MUL
 bool mul(string operand)
 {
    if (typeofoperand(operand) == "reg" || typeofoperand(operand) == "memo")
@@ -1463,11 +1445,6 @@ bool mul(string operand)
       if (bitnumberof(operand) == 8)
       {
          int val = getValue("al") * getValue(operand);
-         // if (val > (1 << 16)) // böyle bir durum olamaz zaten ya, niye yazdım ki ??
-         // { // set flags
-
-         //    val = val % (1 << 16);
-         // }
          if (val >= (1 << 8))
          {
             of = true;
@@ -1483,11 +1460,6 @@ bool mul(string operand)
             cout << "mul val:" << val << endl;
          }
          int valdx = 0, valax = 0;
-         // if (val > (1 << 32))// böyle bir durum olamaz zaten ya, niye yazdım ki ??
-         // { // set flags
-         //    //setFLAG
-         //    val=val % (1 << 16);
-         // }
          if (val >= (1 << 16))
          {
             of = true;
@@ -1505,9 +1477,7 @@ bool mul(string operand)
    }
 }
 
-// note
-// val > (1<<16) yapınca eşitlik durumunu unutuyorsun, eşitlik durumunu da ekle !
-
+// DIV
 bool div(string operand)
 {
    if (typeofoperand(operand) == "reg" || typeofoperand(operand) == "memo")
@@ -1540,8 +1510,6 @@ bool div(string operand)
    {
       error("wrong type operand");
    }
-
-   // when 1555555555/2, you cannot store the quotient in ax because  there aren't enough bits
 }
 
 //Register to register
@@ -1563,18 +1531,15 @@ bool add(string a, string b)
       if (bitA == bitB)
       {
          int temp = getValue(a) + getValue(b);
-         // maybe temp can be high value !!!
-         // cout << "temp:" << temp << " a:" << (1 << bitA) << endl;
 
+         // maybe temp can be high value
          if (temp > (1 << bitA))
          {
             cf = 1;
-            // cout << "assd" << endl;
          }
          else
          {
             cf = 0;
-            // cout << "küçük" << endl;
          }
 
          mov(a, to_string(temp % (1 << bitA)));
@@ -1582,6 +1547,7 @@ bool add(string a, string b)
       else
       {
          //error bit number is not appropriate
+         error("bit number is not appropriate");
       }
    }
    else if (typeA == "memory" && typeB == "reg")
@@ -1634,15 +1600,10 @@ bool add(string a, string b)
             //getValue(a) can be change
             int temp = getValue(a) + getValue(b);
             mov(a, to_string(temp));
-            //if (getValue(src) < 1 << 16)
-            //{
-            //   getMemoRef(dest) = getValue(src);
-            //   *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
-            //}
          }
          else
          {
-            //error
+            error("");
          }
       }
       else if (bitA == 8)
@@ -1654,16 +1615,17 @@ bool add(string a, string b)
          }
          else
          {
-            //error
+            error("");
          }
       }
    }
    else
    {
-      //error
+      error("");
    }
 }
 
+// SUB
 bool sub(string a, string b)
 {
    string typeA = typeofoperand(a);
@@ -1692,7 +1654,7 @@ bool sub(string a, string b)
       }
       else
       {
-         //error bit number is not appropriate
+         error("");
       }
    }
    else if (typeA == "memory" && typeB == "reg")
@@ -1702,7 +1664,9 @@ bool sub(string a, string b)
          int temp = getValue(a) - getValue(b);
          if (temp < 0)
          {
-            //negative value operations
+            mov(a, to_string((1 << bitA) + temp));
+            sf = 1;
+            cf = 1;
          }
          else
          {
@@ -1714,7 +1678,10 @@ bool sub(string a, string b)
          int temp = getValue(a) - getValue(b);
          if (temp < 0)
          {
-            //negative value operations
+            mov(a, to_string((1 << bitA) + temp));
+
+            sf = 1;
+            cf = 1;
          }
          else
          {
@@ -1733,7 +1700,10 @@ bool sub(string a, string b)
          int temp = getValue(a) - getValue(b);
          if (temp < 0)
          {
-            //negative value operations
+            mov(a, to_string((1 << bitA) + temp));
+
+            sf = 1;
+            cf = 1;
          }
          else
          {
@@ -1745,7 +1715,10 @@ bool sub(string a, string b)
          int temp = getValue(a) - getValue(b);
          if (temp < 0)
          {
-            //negative value operations
+            mov(a, to_string((1 << bitA) + temp));
+
+            sf = 1;
+            cf = 1;
          }
          else
          {
@@ -1763,7 +1736,10 @@ bool sub(string a, string b)
       int temp = getValue(a) - getValue(b);
       if (temp < 0)
       {
-         //negative value operations
+         mov(a, to_string((1 << bitA) + temp));
+
+         sf = 1;
+         cf = 1;
       }
       else
       {
@@ -1780,21 +1756,19 @@ bool sub(string a, string b)
             int temp = getValue(a) - getValue(b);
             if (temp < 0)
             {
-               //negative value operations
+               mov(a, to_string((1 << bitA) + temp));
+
+               sf = 1;
+               cf = 1;
             }
             else
             {
                mov(a, to_string(temp));
             }
-            //if (getValue(src) < 1 << 16)
-            //{
-            //   getMemoRef(dest) = getValue(src);
-            //   *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
-            //}
          }
          else
          {
-            //error
+            error("");
          }
       }
       else if (bitA == 8)
@@ -1804,7 +1778,9 @@ bool sub(string a, string b)
             int temp = getValue(a) - getValue(b);
             if (temp < 0)
             {
-               //negative value operations
+               mov(a, to_string((1 << bitA) + temp));
+               sf = 1;
+               cf = 1;
             }
             else
             {
@@ -1813,13 +1789,12 @@ bool sub(string a, string b)
          }
          else
          {
-            //error
+            error("");
          }
       }
    }
    else if (typeA == "dw" || typeA == "db")
    {
-      // int ans=0;
       if ((getValue(a) - getValue(b) < 0))
       {
          cf = 1;
@@ -1841,13 +1816,16 @@ bool sub(string a, string b)
          }
          else
          {
-            error("sth occur");
+            error("");
          }
       }
-      // exit(1);
    }
    else
    {
-      //error
+      error("");
    }
 }
+
+// NOTES
+// dont confuse 1<<8 and 2<<8
+// when write val > (1<<16) you forget equality case
