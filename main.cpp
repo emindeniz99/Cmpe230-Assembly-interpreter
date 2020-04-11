@@ -1203,12 +1203,14 @@ bool shl(string a, string b)
 {
    int temp = getValue(a) << getValue(b);
    mov(a, to_string(temp%(1<<bitnumberof(a))));
+   cf=(temp/((1<<bitnumberof(a))   ))%2   ;
    return true;
 }
 bool shr(string a, string b)
 {
    int temp = getValue(a) >> getValue(b);
    mov(a, to_string(temp%(1<<bitnumberof(a))));
+   cf=(temp>>(bitnumberof(a)-1)   )%2   ;
    return true;
 }
 
@@ -1410,8 +1412,13 @@ bool rcl(string a, string b)
    int bit = bitnumberof(a);
    int val = getValue(b);
    int va = getValue(a);
-   mov(a, to_string(   ((va<<val) % (1 << bit)) + (va<<val)/(1<<bit)            ));
+   // cout<<bit<<" "<<val<<" "<< va <<endl;
 
+   //  cout<<((va<<(val)) % (1 << bit))<<" "<<(va<<(val-1))/(1<<bit)<<" "<< (cf*(1<<(val-1)))  <<endl;
+   mov(a, to_string(   ((va<<(val)) % (1 << bit)) | (va<<(val-1))/(1<<bit) | (cf*(1<<(val-1)))           ));
+   
+   cf=(va/((1<<(bitnumberof(a)-getValue(b)))   ))%2   ;
+// cout<<"cf:"<<cf<<endl;
    // rcl=> (a<<1)%(1<<8)  + (a<<1)/(1<<8)  check above
 }
 bool rcr(string a, string b)
@@ -1450,7 +1457,10 @@ bool rcr(string a, string b)
    int bit = bitnumberof(a);
    int val = getValue(b);
    int va = getValue(a);
-   mov(a, to_string(((va) % (1 << val)) * (1 << (bit - val)) + (va >> val)));
+   mov(a, to_string( ((va) % (1 << (val-1))) * (1 << (bit - val+1)) + cf*(1<<(bit-val)) + (va >> val)) ); // kontrol et !
+
+   cf=(va>>(bitnumberof(b)-1)   )%2   ;
+
 }
 
 bool _int(string operand)

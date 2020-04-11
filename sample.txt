@@ -1,32 +1,34 @@
-Test24
+Test15
 =====
 
 Input:
 
 Output:
-ABCDEFGHIJ
+01
+
 --------------------
 code segment
-mov ax,0F8h
-mov bx,7
-not bl
-xor ax,bx
-jnz fin
-mov cx,10
-mov bl,1
-mov dl,65d
-myloop:
-mov ah,2
+mov bl, 91h
+mov bh, 0DDh
+sub bl, bh
+jnc ex
+mov ah, 02h
+mov dl, '0'
 int 21h
-add dl,bl
-sub cl,bl
-cmp cl,bl
-jae myloop                              
-fin:
-int 20h
+mov al, 93h
+mov ah, 065h
+add al, ah
+jnc ex
+mov ah, 02h
+mov dl, 'X'
+int 21h
+ex:
+    mov ah, 02h
+    mov dl, '1'
+    int 21h
+    int 20h
 code ends
 --------------------
-
 
 
 
