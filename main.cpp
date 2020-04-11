@@ -1176,8 +1176,9 @@ bool _or(string a, string b)
 }
 bool _xor(string a, string b)
 {
-   if(getValue(a) ^ getValue(b)==0){
-      zf=1;
+   if (getValue(a) ^ getValue(b) == 0)
+   {
+      zf = 1;
    }
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
@@ -1190,27 +1191,27 @@ bool _xor(string a, string b)
          mov(a, to_string(getValue(a) ^ getValue(b)));
       }
    }
-   
+
    return true;
 }
 bool _not(string a)
 {
-   
+
    mov(a, to_string(~getValue(a)));
    return true;
 }
 bool shl(string a, string b)
 {
    int temp = getValue(a) << getValue(b);
-   mov(a, to_string(temp%(1<<bitnumberof(a))));
-   cf=(temp/((1<<bitnumberof(a))   ))%2   ;
+   mov(a, to_string(temp % (1 << bitnumberof(a))));
+   cf = (temp / ((1 << bitnumberof(a)))) % 2;
    return true;
 }
 bool shr(string a, string b)
 {
    int temp = getValue(a) >> getValue(b);
-   mov(a, to_string(temp%(1<<bitnumberof(a))));
-   cf=(temp>>(bitnumberof(a)-1)   )%2   ;
+   mov(a, to_string(temp % (1 << bitnumberof(a))));
+   cf = (temp >> (bitnumberof(a) - 1)) % 2;
    return true;
 }
 
@@ -1415,10 +1416,10 @@ bool rcl(string a, string b)
    // cout<<bit<<" "<<val<<" "<< va <<endl;
 
    //  cout<<((va<<(val)) % (1 << bit))<<" "<<(va<<(val-1))/(1<<bit)<<" "<< (cf*(1<<(val-1)))  <<endl;
-   mov(a, to_string(   ((va<<(val)) % (1 << bit)) | (va<<(val-1))/(1<<bit) | (cf*(1<<(val-1)))           ));
-   
-   cf=(va/((1<<(bitnumberof(a)-getValue(b)))   ))%2   ;
-// cout<<"cf:"<<cf<<endl;
+   mov(a, to_string(((va << (val)) % (1 << bit)) | (va << (val - 1)) / (1 << bit) | (cf * (1 << (val - 1)))));
+
+   cf = (va / ((1 << (bitnumberof(a) - getValue(b))))) % 2;
+   // cout<<"cf:"<<cf<<endl;
    // rcl=> (a<<1)%(1<<8)  + (a<<1)/(1<<8)  check above
 }
 bool rcr(string a, string b)
@@ -1457,10 +1458,9 @@ bool rcr(string a, string b)
    int bit = bitnumberof(a);
    int val = getValue(b);
    int va = getValue(a);
-   mov(a, to_string( ((va) % (1 << (val-1))) * (1 << (bit - val+1)) + cf*(1<<(bit-val)) + (va >> val)) ); // kontrol et !
+   mov(a, to_string(((va) % (1 << (val - 1))) * (1 << (bit - val + 1)) + cf * (1 << (bit - val)) + (va >> val))); // kontrol et !
 
-   cf=(va>>(bitnumberof(b)-1)   )%2   ;
-
+   cf = (va >> (bitnumberof(b) - 1)) % 2;
 }
 
 bool _int(string operand)
@@ -1620,7 +1620,20 @@ bool add(string a, string b)
       {
          int temp = getValue(a) + getValue(b);
          // maybe temp can be high value !!!
-         mov(a, to_string(temp));
+         // cout << "temp:" << temp << " a:" << (1 << bitA) << endl;
+
+         if (temp > (1 << bitA))
+         {
+            cf = 1;
+            // cout << "assd" << endl;
+         }
+         else
+         {
+            cf = 0;
+            // cout << "küçük" << endl;
+         }
+
+         mov(a, to_string(temp % (1 << bitA)));
       }
       else
       {
@@ -1723,6 +1736,10 @@ bool sub(string a, string b)
          if (temp < 0)
          {
             //negative value operations
+            mov(a, to_string((1 << bitA) + temp));
+
+            sf = 1;
+            cf = 1;
          }
          else
          {
@@ -1859,16 +1876,21 @@ bool sub(string a, string b)
    else if (typeA == "dw" || typeA == "db")
    {
       // int ans=0;
-      if((getValue(a)-getValue(b)<0)){
+      if ((getValue(a) - getValue(b) < 0))
+      {
          cf = 1;
          sf = 1;
-      }else if((getValue(a)-getValue(b))==0){
+      }
+      else if ((getValue(a) - getValue(b)) == 0)
+      {
          zf = 1;
       }
-         if(typeB=="value"||typeB=="offset"){
+      if (typeB == "value" || typeB == "offset")
+      {
          mov(a, to_string(getValue(a) - getValue(b)));
-         }
-         else{
+      }
+      else
+      {
          if (bitA == bitB)
          {
             mov(a, to_string(getValue(a) - getValue(b)));
@@ -1877,7 +1899,7 @@ bool sub(string a, string b)
          {
             error("sth occur");
          }
-         }
+      }
       // exit(1);
    }
    else
