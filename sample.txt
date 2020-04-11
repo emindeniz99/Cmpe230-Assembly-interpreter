@@ -1,30 +1,32 @@
-Test25
+Test24
 =====
 
 Input:
 
 Output:
-$
+ABCDEFGHIJ
 --------------------
 code segment
-mov ax,59
-mov bx,89
-mov si,420h
-mov w[si],bx
-mov cx,202h
-or al,bl
-and al,b[si]
-or al,cl
-shl ax,3
-mov dl,al
-mov dh,0
-shr dx,1
-and dl,bl
-rcr dl,1
+mov ax,0F8h
+mov bx,7
+not bl
+xor ax,bx
+jnz fin
+mov cx,10
+mov bl,1
+mov dl,65d
+myloop:
+mov ah,2
 int 21h
+add dl,bl
+sub cl,bl
+cmp cl,bl
+jae myloop                              
+fin:
 int 20h
 code ends
 --------------------
+
 
 
 

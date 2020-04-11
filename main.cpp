@@ -1176,6 +1176,9 @@ bool _or(string a, string b)
 }
 bool _xor(string a, string b)
 {
+   if(getValue(a) ^ getValue(b)==0){
+      zf=1;
+   }
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
       mov(a, to_string(getValue(a) ^ getValue(b)));
@@ -1187,11 +1190,13 @@ bool _xor(string a, string b)
          mov(a, to_string(getValue(a) ^ getValue(b)));
       }
    }
+   
    return true;
 }
 bool _not(string a)
 {
-   ~getValue(a);
+   
+   mov(a, to_string(~getValue(a)));
    return true;
 }
 bool shl(string a, string b)
