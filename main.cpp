@@ -5,7 +5,7 @@
 
 using namespace std;
 
-bool DebugMode = false;  // to get real outputs, assign it false
+bool DebugMode = true; // to get real outputs, assign it false
 
 // prototypes
 template <class datatype>
@@ -100,6 +100,8 @@ bool pop(string operand);
 bool rcr(string a, string b);
 bool rcl(string a, string b);
 bool _int(string operand);
+bool mul(string operand);
+bool div(string operand);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
@@ -107,9 +109,10 @@ int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 void error(string errormsg)
 {
    cout << "ERROR: " << errormsg << endl;
-   if(!DebugMode){
-      exit(1);   // comment it to avoid from stopping program
-   }  
+   if (!DebugMode)
+   {
+      exit(1); // comment it to avoid from stopping program
+   }
 }
 
 int sayac = -1; // !
@@ -387,8 +390,10 @@ int main(int argc, char *argv[])
          else if (ins == "shr")
          {
             shr(first, second);
-         }else{
-            cout<<"Error"<<endl;
+         }
+         else
+         {
+            cout << "Error" << endl;
             exit(1);
          }
       }
@@ -477,8 +482,17 @@ int main(int argc, char *argv[])
          {
             _int(first);
          }
-         else{
-            cout<<"Error"<<endl;
+         else if (ins == "mul")
+         {
+            mul(first);
+         }
+         else if (ins == "div")
+         {
+            div(first);
+         }
+         else
+         {
+            cout << "Error" << endl;
             exit(1);
          }
       }
@@ -502,7 +516,7 @@ int main(int argc, char *argv[])
       PC++;
    }
 
-   cout<<endl;
+   cout << endl;
    // 2. Place  dw and db data  and compute addresses
 
    // 3.  PC = line 0
@@ -769,6 +783,7 @@ int bitnumberof(string operand)
    // variable
 }
 
+// returns "reg" "memory" "offset" "offset" "dw" "db"
 string typeofoperand(string operand)
 {
    strip(operand);
@@ -938,7 +953,7 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
 {
    if (DebugMode)
    {
-      cout << "value - bit - type" << endl
+      cout << "[in mov ] value - bit - type" << endl
            << getValue(dest) << " " << bitnumberof(dest) << "  " << typeofoperand(dest) << endl
            << getValue(src) << "   " << bitnumberof(src) << "  " << typeofoperand(src) << endl;
    }
@@ -1119,13 +1134,13 @@ bool _and(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-    mov(a,to_string(getValue(a) & getValue(b)))  ;
+      mov(a, to_string(getValue(a) & getValue(b)));
    }
    else
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         mov(a,to_string(getValue(a) & getValue(b)))  ;
+         mov(a, to_string(getValue(a) & getValue(b)));
       }
    }
    return true;
@@ -1134,7 +1149,7 @@ bool _or(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-      mov(a,to_string(getValue(a) | getValue(b)))  ;
+      mov(a, to_string(getValue(a) | getValue(b)));
    }
    else
    {
@@ -1142,7 +1157,7 @@ bool _or(string a, string b)
       {
          // cout<<a<<"-"<<b<<endl;
          // cout<<"asdas"<<(getValue(a) | getValue(b))<<endl;
-         mov(a,to_string(getValue(a) | getValue(b)))  ;
+         mov(a, to_string(getValue(a) | getValue(b)));
       }
    }
    return true;
@@ -1151,13 +1166,13 @@ bool _xor(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-      mov(a,to_string(getValue(a) ^ getValue(b)))  ;
+      mov(a, to_string(getValue(a) ^ getValue(b)));
    }
    else
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         mov(a,to_string(getValue(a) ^ getValue(b)))  ;
+         mov(a, to_string(getValue(a) ^ getValue(b)));
       }
    }
    return true;
@@ -1375,8 +1390,7 @@ bool rcl(string a, string b)
    }
    mov(a, to_string(total));
 
-   
-   // rcl=> (a<<1)%(1<<8)  + (a<<1)/(1<<8)  check above 
+   // rcl=> (a<<1)%(1<<8)  + (a<<1)/(1<<8)  check above
 }
 bool rcr(string a, string b)
 {
@@ -1411,11 +1425,10 @@ bool rcr(string a, string b)
    //    total += binaryArr[i] * two;
    // }
    // mov(a, to_string(total%(bitnumberof(a))));
-   int bit=bitnumberof(a);
-   int val=getValue(b);
-   int va=getValue(a);
-   mov(a,to_string(     ((va)%( 1<<val ))*(1<<(bit-val))  + (va>>val)      ));
-   
+   int bit = bitnumberof(a);
+   int val = getValue(b);
+   int va = getValue(a);
+   mov(a, to_string(((va) % (1 << val)) * (1 << (bit - val)) + (va >> val)));
 }
 
 bool _int(string operand)
@@ -1450,9 +1463,12 @@ bool _int(string operand)
       {
          error("what does int 21h do?");
       }
-   } else if(operand == "20h"){
-      if (DebugMode){
-         cout<<"int20h stop"<<endl;
+   }
+   else if (operand == "20h")
+   {
+      if (DebugMode)
+      {
+         cout << "int20h stop" << endl;
       }
       exit(1);
    }
@@ -1462,4 +1478,87 @@ bool _int(string operand)
       return false;
    }
    return true;
+}
+
+bool mul(string operand)
+{
+   if (typeofoperand(operand) == "reg" || typeofoperand(operand) == "memo")
+   {
+      if (bitnumberof(operand) == 8)
+      {
+         int val = getValue("al") * getValue(operand);
+         // if (val > (1 << 16)) // böyle bir durum olamaz zaten ya, niye yazdım ki ??
+         // { // set flags
+
+         //    val = val % (1 << 16);
+         // }
+         if(val>=(1 << 8)){
+            of=true;
+            cf=true;
+         }
+         mov("ax", to_string(val));
+      }
+      else if (bitnumberof(operand) == 16)
+      {
+         int val = getValue("ax") * getValue(operand);
+         cout<<"mul val:"<<val<<endl;
+         int valdx=0,valax=0;
+         // if (val > (1 << 32))// böyle bir durum olamaz zaten ya, niye yazdım ki ??
+         // { // set flags
+         //    //setFLAG
+         //    val=val % (1 << 16);
+         // }
+        if(val>=(1 << 16)){
+            of=true;
+            cf=true;
+         }
+         valdx=val/(1<<16);
+         valax=val%(1<<16);
+            mov("ax", to_string(valax));
+            mov("dx", to_string(valdx));
+         
+      }
+   }
+   else
+   {
+      error("wrong type operand");
+   }
+}
+
+// note
+// val > (1<<16) yapınca eşitlik durumunu unutuyorsun, eşitlik durumunu da ekle !
+
+
+bool div(string operand){
+   if (typeofoperand(operand) == "reg" || typeofoperand(operand) == "memo")
+   {
+      if(getValue(operand)==0){
+         error("divide by 0 :D");
+      }
+      if (bitnumberof(operand) == 8)
+      {
+         int valal = getValue("ax") / getValue(operand);
+         int valah= getValue("ax") % getValue(operand);
+         mov("al", to_string(valal));
+         mov("ah", to_string(valah));
+      }
+      else if (bitnumberof(operand) == 16)
+      {
+         int base= getValue("dx")*(1<<16) +getValue("ax");
+         int valax = base / getValue(operand);
+         int valdx= base % getValue(operand);
+         if(valax>((1<<16)-1)){
+            error("Div error, you cannot store the quotient in ax because  there aren't enough bits");
+         }
+         mov("ax", to_string(valax));
+         mov("dx", to_string(valdx));
+      }
+   }
+   else
+   {
+      error("wrong type operand");
+   }
+
+// when 1555555555/2, you cannot store the quotient in ax because  there aren't enough bits
+
 }

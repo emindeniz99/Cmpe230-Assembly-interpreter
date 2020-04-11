@@ -1,6 +1,15 @@
+code segment
+mov al,120
+mov bl,50
+div bl
+int20h
+code ends
+
 
 code segment   
-mov ah,1
+mov ah,EEh
+mov al,EEh
+mul ah
 int 21h
 mov dl,al
 mov ah,2
