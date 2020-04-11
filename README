@@ -1,0 +1,7 @@
+to compile program
+gcc -o main.o main.cpp -lstdc++ 
+
+to run
+./main.o <inputfilepath>
+example
+./main.o /mnt/c/Users/Projects/CMPE230/project1-assembly-interpreter/tests/Raw\ Tests/test9.asm

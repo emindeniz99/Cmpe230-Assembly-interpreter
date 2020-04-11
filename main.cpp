@@ -29,9 +29,9 @@ unsigned short dx = 0;
 unsigned short di = 0;             // destination index
 unsigned short si = 0;             // source index
 unsigned short sp = (1 << 16) - 2; // stackpoint
-unsigned short bp = 0;             // base pointer ? usually 0
+unsigned short bp = 0;             // base pointer
 
-unsigned short PC = 0;
+unsigned short PC = 0;  // Program Counter, it can be changed by Jump instructions
 
 bool zf; // zero flag
 bool sf; // sign flag
@@ -134,7 +134,8 @@ int main(int argc, char *argv[])
       cout << "Loaded filename: " << argv[1] << endl;
    }
 
-   ifstream file("./" + (string)argv[1]);
+   // ifstream file("./" + (string)argv[1]); // for filename in same directory
+   ifstream file((string)argv[1]); // for full path
 
    if (file.peek() == EOF) // checks if file exists or not
    {
@@ -1301,89 +1302,23 @@ void jnc(string a)
    }
 }
 
+// RCL
 bool rcl(string a, string b)
 {
-   // int value = getValue(a);
-   // int lengthOfArr = bitnumberof(a);
-   // int binaryArr[lengthOfArr - 1];
-   // for (int i = 0; value > 0; i++)
-   // {
-   //    binaryArr[i] = value % 2;
-   //    value = value / 2;
-   // }
-   // for (int i = 0; i < lengthOfArr - 1; i++)
-   // {
-   //    int temp = binaryArr[i + 1];
-   //    binaryArr[i + 1] = binaryArr[i];
-   //    binaryArr[i] = temp;
-   // }
-   // int total = 0;
-   // int i = 0;
-   // if (i == 0)
-   // {
-   //    total = binaryArr[0] * 2;
-   //    i++;
-   // }
-   // for (i = 1; i < lengthOfArr; i++)
-   // {
-   //    int two = 1;
-   //    for (int j = 0; j < i; j++)
-   //    {
-   //       two = 2 * two;
-   //    }
-   //    total += binaryArr[i] * two;
-   // }
-   // mov(a, to_string(total));
    int bit = bitnumberof(a);
    int val = getValue(b);
    int va = getValue(a);
-   // cout<<bit<<" "<<val<<" "<< va <<endl;
-
-   //  cout<<((va<<(val)) % (1 << bit))<<" "<<(va<<(val-1))/(1<<bit)<<" "<< (cf*(1<<(val-1)))  <<endl;
    mov(a, to_string(((va << (val)) % (1 << bit)) | (va << (val - 1)) / (1 << bit) | (cf * (1 << (val - 1)))));
-
    cf = (va / ((1 << (bitnumberof(a) - getValue(b))))) % 2;
-   // cout<<"cf:"<<cf<<endl;
-   // rcl=> (a<<1)%(1<<8)  + (a<<1)/(1<<8)  check above
 }
+
+// RCR
 bool rcr(string a, string b)
 {
-   // int value = getValue(a);
-   // int lengthOfArr = bitnumberof(a);
-   // int binaryArr[lengthOfArr - 1];
-   // for (int i = 0; value > 0; i++)
-   // {
-   //    binaryArr[i] = value % 2;
-   //    value = value / 2;
-   // }
-   // for (int i = 0; i < lengthOfArr - 1; i++)
-   // {
-   //    int temp = binaryArr[i];
-   //    binaryArr[i] = binaryArr[i + 1];
-   //    binaryArr[i + 1] = temp;
-   // }
-   // int total = 0;
-   // int i = 0;
-   // if (i == 0)
-   // {
-   //    total = binaryArr[0] * 2;
-   //    i++;
-   // }
-   // for (i = 1; i < lengthOfArr; i++)
-   // {
-   //    int two = 1;
-   //    for (int j = 0; j < i; j++)
-   //    {
-   //       two = 2 * two;
-   //    }
-   //    total += binaryArr[i] * two;
-   // }
-   // mov(a, to_string(total%(bitnumberof(a))));
    int bit = bitnumberof(a);
    int val = getValue(b);
    int va = getValue(a);
    mov(a, to_string(((va) % (1 << (val - 1))) * (1 << (bit - val + 1)) + cf * (1 << (bit - val)) + (va >> val))); // kontrol et !
-
    cf = (va >> (bitnumberof(b) - 1)) % 2;
 }
 
