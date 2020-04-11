@@ -13,7 +13,6 @@ void print_bits(datatype x);
 template <class datatype>
 void print_hex(datatype x);
 template <class regtype>
-void mov_reg_reg(regtype *preg1, regtype *preg2);
 void print_16bitregs();
 void printflags();
 void printmemo();
@@ -61,18 +60,21 @@ unsigned char *pcl = (unsigned char *)&cx;
 unsigned char *pdh = (unsigned char *)(((unsigned char *)&dx) + 1);
 unsigned char *pdl = (unsigned char *)&dx;
 
+// labels <names, instruction index >
 map<string, int> labels;
 
+// instructions
 vector<string> commands;
 
-map<string, pair<string, int>> variables; // myvar,type,memory ref, myvar,db/dw,65456 index
+// variables <variable name, < type(db,dw), memory index> >
+map<string, pair<string, int>> variables;
 
-int variablestartpoint = 0; // it should be updated wrt sayac, until int20h
+int variablestartpoint = 0; // it should be updated wrt insCounter, until int20h
 
-// functions
+// functions, you can find more info below
+
 string strip(string &str);
 void lowerCase(string &str);
-
 bool mov(string a, string b);
 void jnc(string a);
 void jc(string a);
@@ -103,28 +105,22 @@ bool mul(string operand);
 bool div(string operand);
 bool add(string a, string b);
 bool sub(string a, string b);
-
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
 // ERROR message
 void error(string errormsg)
 {
    cout << "ERROR: " << errormsg << endl;
-   // if (!DebugMode)
+   if (!DebugMode) // in debug mode, it won't crash at error to get more info
    {
       exit(1); // comment it to avoid from stopping program
    }
 }
 
-int sayac = -1; // !
+int insCounter = -1; // wait until see "code segment block"
 int main(int argc, char *argv[])
 {
-   // *pax = 1;
-   // *pbx = 7;
-   // *pah = 3;
-
-   // 1. Read instruction lines
-
+   // reads filename as a argument
    if (argv[1] == NULL)
    {
       cerr << "Please, give filename as an argument" << endl;
@@ -146,6 +142,7 @@ int main(int argc, char *argv[])
 
    bool vardefstart = false;
 
+   // 1. Read lines of file
    while (getline(file, line, '\n'))
    {
       strip(line); // get rid of return carriage
@@ -157,25 +154,25 @@ int main(int argc, char *argv[])
       if (line.find("code segment") != string::npos)
       {
          // cout << "code segment" << endl;
-         sayac = 0;
+         insCounter = 0; // starts reading instructions
          continue;
       }
 
       // wait until code segment is seen
-      if (sayac < 0)
+      if (insCounter < 0)
          continue;
 
       // break if code ends
       if (line.find("code ends") != string::npos)
       {
-         // cout << "bitti" << line.find("code ends") << endl;
+         // cout << "file reading is finished " << line.find("code ends") << endl;
          break;
       }
 
       if (line.find("int 20h") != string::npos)
       {
-         // cout << "bitti" << line.find("code ends") << endl;
-         variablestartpoint = 6 * (sayac + 2); // +2 due to own and next empty index of array
+         // cout << "ins fin" << line.find("code ends") << endl;
+         variablestartpoint = 6 * (insCounter + 2); // +2 due to own and next empty index of array
          vardefstart = true;
          continue;
       }
@@ -185,12 +182,11 @@ int main(int argc, char *argv[])
       {
          // cout << "var:" << line << endl;
          stringstream ls(line);     //linestream
-         string varname, type, val; // name and dw or db
-         // char value;
+         string varname, type, val; // name, dw or db , value
          ls >> varname >> type;
          getline(ls, val);
          strip(val);
-         int asd = tointeger(val);
+         int intvalue = tointeger(val);
 
          if (variables.count(varname) > 0)
          {
@@ -198,10 +194,10 @@ int main(int argc, char *argv[])
             exit(1);
          }
 
-         // cout << "VariableAdress: (int)" << asd << endl;
+         // cout << "VariableAdress: (int)" << intvalue << endl;
          if (type == "db")
          {
-            memory[variablestartpoint] = asd;
+            memory[variablestartpoint] = intvalue;
 
             variables[varname] = make_pair("db", variablestartpoint);
 
@@ -209,9 +205,9 @@ int main(int argc, char *argv[])
             variablestartpoint++;
          }
          else if (type == "dw")
-         {                                             // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
-            memory[variablestartpoint] = asd;          // modulo 1<<8 e gerek var mı ?? !!!
-            memory[variablestartpoint + 1] = asd >> 8; // get upper via shift 8 bit right
+         {                                                  // https://piazza.com/class/k6aep8s1v8v50g?cid=65 top low memo
+            memory[variablestartpoint] = intvalue;          // modulo 1<<8 is not necessary, memory is char arr, it casts
+            memory[variablestartpoint + 1] = intvalue >> 8; // get upper via shift 8 bit right
 
             variables[varname] = make_pair("dw", variablestartpoint);
 
@@ -229,11 +225,12 @@ int main(int argc, char *argv[])
          continue;
       }
 
+      // create line stream to read line as "cin"
       stringstream ss(line); // MOV AX,[ 0abcdh ]
-      string ins;
-      ss >> ins; // MOV
+      string ins;            //name of instructions
+      ss >> ins;             // MOV
 
-      string delimiter = ":";
+      // check labels
       if (ins[ins.length() - 1] == ':')
       {
          if (labels.count(ins))
@@ -244,45 +241,18 @@ int main(int argc, char *argv[])
             return 0;
          }
          ins = ins.substr(0, ins.length() - 1);
-         // cout << "label buldum :"<<sayac<< endl;
-         labels[ins] = sayac;
+         // cout << "label found index:"<<insCounter<< endl;
+         labels[ins] = insCounter; // store index of label
       }
+      // else if it is not label, they are instructions
       else
       {
          commands.push_back(line);
-         sayac++;
+         insCounter++;
       }
-
-      // sayac++; // wrong place for sayac, i moved above
-
-      // vector<string> result;
-      // while (ss.good()) // AX,[ 0abcdh ]
-      // {
-      //    string substr;
-      //    getline(ss, substr, ' ');
-      //    cout<<substr;
-      //    result.push_back(substr);
-      // }
-
-      // istringstream iss(line);
-      // string result;
-      // if (getline(iss, result, '='))
-      // {
-      //    if (result == "foo")
-      //    {
-      //       string token;
-      //       while (getline(iss, token, ','))
-      //       {
-      //          cout << token << endl;
-      //       }
-      //    }
-      //    else
-      //    {
-      //       // ...
-      //    }
-      // }
    }
 
+   // in developement stage, it shows current memory, variables, labels, etc.
    if (DebugMode)
    {
       // print instructions
@@ -307,6 +277,8 @@ int main(int argc, char *argv[])
       cout << "Program starts execution" << endl;
    }
 
+   // PC is like program counter (PC)
+   // it process
    while (PC < commands.size())
    {
       if (DebugMode)
@@ -323,15 +295,16 @@ int main(int argc, char *argv[])
 
       lowerCase(ins);
 
+      // check if there are one or two operand
       if (currcmd.find(",") != string::npos)
       {
          string first;
          string second;
          getline(iss, first, ',');
          getline(iss, second, ',');
-         // iss >> second;
-         strip(first);
-         strip(second);
+         strip(first);  // first operand
+         strip(second); // second operand
+
          if (DebugMode)
          {
             cout << "Ins: " << ins << " Dest: " << first << " Src: " << second << endl;
@@ -339,8 +312,7 @@ int main(int argc, char *argv[])
 
          if (ins == "mov")
          {
-            mov(first, second); // ax  ,bx    ax,01h
-            // break;
+            mov(first, second);
          }
          else if (ins == "cmp")
          {
@@ -496,14 +468,6 @@ int main(int argc, char *argv[])
          }
       }
 
-      // vector<string> result;
-      // while (ss.good()) // AX,[ 0abcdh ]
-      // {
-      //    string substr;
-      //    getline(ss, substr, ' ');
-      //    cout<<substr;
-      //    result.push_back(substr);
-      // }
       if (DebugMode)
       {
          print_16bitregs();
@@ -516,22 +480,7 @@ int main(int argc, char *argv[])
    }
 
    cout << endl;
-   // 2. Place  dw and db data  and compute addresses
 
-   // 3.  PC = line 0
-   // while (PC !=  int20line) {
-   //     getline(PC)
-   //     parse instruction in the line  to extract opcode and operands
-   //     if (strcmp(opcode,"ADD) {
-   //        .... determine operands and call appropriate add function
-   //     }
-   //     else if (strcmp(opcode,"MOV") ) {
-   //         .. determine operands call  appropriate mov function
-   // mov_reg_reg(pax, pbx);
-   // *pax = 50000;
-   //     }
-   //
-   // }
    if (DebugMode)
    {
       cout << endl
@@ -548,14 +497,12 @@ int main(int argc, char *argv[])
            << "stack:" << endl;
       printStack();
    }
-
-   // print_hex(*pah);
-   // print_hex(*pal);
 }
 
+// prints memory that variables exist
 void printmemo()
 {
-   for (int i = 6 * (sayac + 2); i < variablestartpoint; i++)
+   for (int i = 6 * (insCounter + 2); i < variablestartpoint; i++)
    {
       cout << "memo[" << i << "] : " << 0 + memory[i] << endl;
    }
@@ -563,7 +510,6 @@ void printmemo()
 
 void printflags()
 {
-
    cout << "ZF: " << zf << endl;
    cout << "SF: " << sf << endl;
    cout << "CF: " << cf << endl;
@@ -577,12 +523,6 @@ void printStack()
    {
       cout << "stack[" << i << "] : " << 0 + memory[i] << endl;
    }
-}
-
-template <class regtype>
-bool mov_reg_reg(regtype *preg1, regtype *preg2)
-{
-   *preg1 = *preg2;
 }
 
 template <class datatype>
@@ -618,9 +558,9 @@ void print_16bitregs()
    printf("BP:%04x %d\n", bp, bp);
 }
 
+// strip deletes whitespaces and \r from left side and right side
 // https://stackoverflow.com/questions/83439/remove-spaces-from-stdstring-in-c
 // https://en.cppreference.com/w/cpp/algorithm/remove
-// strip deletes spaces according to left side and right side
 string strip(string &str)
 {
    string newstr;
@@ -662,6 +602,7 @@ string strip(string &str)
    }
 }
 
+// convert parameter-string to lower cased
 void lowerCase(string &str)
 {
    for (int i = 0; i < str.length(); i++)
@@ -669,6 +610,8 @@ void lowerCase(string &str)
       str[i] = tolower(str[i]);
    }
 }
+
+// string to decimal integer, string can be hex,dec, or pure numbers
 int tointeger(string str)
 {
 
@@ -711,7 +654,7 @@ int tointeger(string str)
    }
 }
 
-// si di is not working, change them to pointer
+// to get easily reference of registers from string
 map<string, unsigned short *> converter16bit = {
     {"ax", pax},
     {"bx", pbx},
@@ -723,6 +666,7 @@ map<string, unsigned short *> converter16bit = {
     {"bp", pbp},
 };
 
+// to get easily reference of registers from string
 map<string, unsigned char *> converter8bit = {
     {"al", pal},
     {"ah", pah},
