@@ -101,8 +101,6 @@ bool rcl(string a, string b);
 bool _int(string operand);
 bool mul(string operand);
 bool div(string operand);
-bool inc(string operand);
-bool inc(string operand);
 bool add(string a, string b);
 bool sub(string a, string b);
 
@@ -112,7 +110,7 @@ int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 void error(string errormsg)
 {
    cout << "ERROR: " << errormsg << endl;
-   if (!DebugMode)
+   // if (!DebugMode)
    {
       exit(1); // comment it to avoid from stopping program
    }
@@ -483,11 +481,14 @@ int main(int argc, char *argv[])
          {
             div(first);
          }
-         // else if(ins=="inc"){
-         //    add(first,"1");
-         // }else if(ins=="dec"){
-         //    sub(first,"1");
-         // }
+         else if (ins == "inc")
+         {
+            add(first, "1");
+         }
+         else if (ins == "dec")
+         {
+            sub(first, "1");
+         }
          else
          {
             cout << "Error" << endl;
@@ -1060,9 +1061,26 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
          }
       }
    }
+   else if (typedest == "db" || typedest == "dw")
+   {
+      if (typedest == "db")
+      {
+         getMemoRef("b[offset" + dest + "]") = getValue(src);
+      }
+      else if (typedest == "dw")
+      {
+         getMemoRef("w[offset" + dest + "]") = getValue(src);
+         *(&getMemoRef("w[offset" + dest + "]") + 1) = getValue(src) >> 8;
+      }
+      else
+      {
+         error("bir şeyler oldu");
+      }
+   }
    else
    {
-      error("ERROR wrong type of dest");
+
+      error("ERROR wrong type of dest" + typedest);
    }
    return true;
 }
@@ -1179,13 +1197,13 @@ bool _not(string a)
 bool shl(string a, string b)
 {
    int temp = getValue(a) << getValue(b);
-   mov(a, to_string(temp));
+   mov(a, to_string(temp%(1<<bitnumberof(a))));
    return true;
 }
 bool shr(string a, string b)
 {
    int temp = getValue(a) >> getValue(b);
-   mov(a, to_string(temp));
+   mov(a, to_string(temp%(1<<bitnumberof(a))));
    return true;
 }
 
@@ -1271,17 +1289,18 @@ void jnz(string a)
 }
 
 //Following are the conditional jump instructions used on unsigned data used for logical operations − (Unsigned)
+//JNBE      //unsigned data used        //Jump Not Below/Equal
+void jnbe(string a)
 
-//JA        //unsigned data used        //Jump Above
-void ja(string a)
 {
-   if (cf == true && zf == true)
+   if (cf == false && zf == false)
    { //Check CF AND ZF Flag
       PC = labels[strip(a)] - 1;
    }
 }
-//JNBE      //unsigned data used        //Jump Not Below/Equal
-void jnbe(string a)
+
+//JA        //unsigned data used        //Jump Above
+void ja(string a)
 {
    if (cf == false && zf == false)
    { //Check CF AND ZF Flag
@@ -1291,7 +1310,7 @@ void jnbe(string a)
 //JAE                                   //Jump Above/Equal
 void jae(string a)
 {
-   if (cf == true)
+   if (cf == false)
    { //Check CF Flag
       PC = labels[strip(a)] - 1;
    }
@@ -1316,7 +1335,7 @@ void jb(string a)
 //JNAE      //unsigned data used        //Jump Not Above/Equal
 void jnae(string a)
 {
-   if (cf == false)
+   if (cf == true)
    { //Check CF Flag
       PC = labels[strip(a)] - 1;
    }
@@ -1325,12 +1344,12 @@ void jnae(string a)
 //JBE        //unsigned data used        //Jump Below/Equa
 void jbe(string a)
 {
-   if (cf == true)
+   if (cf == true || zf == true)
    { //Check CF Flag
       PC = labels[strip(a)] - 1;
    }
 }
-
+// http://faydoc.tripod.com/cpu/ja.htm
 //The following conditional jump instructions have special uses and check the value of flags
 
 //JC      //special      //Jump if carry
@@ -1352,37 +1371,41 @@ void jnc(string a)
 
 bool rcl(string a, string b)
 {
-   int value = getValue(a);
-   int lengthOfArr = bitnumberof(a);
-   int binaryArr[lengthOfArr - 1];
-   for (int i = 0; value > 0; i++)
-   {
-      binaryArr[i] = value % 2;
-      value = value / 2;
-   }
-   for (int i = 0; i < lengthOfArr - 1; i++)
-   {
-      int temp = binaryArr[i + 1];
-      binaryArr[i + 1] = binaryArr[i];
-      binaryArr[i] = temp;
-   }
-   int total = 0;
-   int i = 0;
-   if (i == 0)
-   {
-      total = binaryArr[0] * 2;
-      i++;
-   }
-   for (i = 1; i < lengthOfArr; i++)
-   {
-      int two = 1;
-      for (int j = 0; j < i; j++)
-      {
-         two = 2 * two;
-      }
-      total += binaryArr[i] * two;
-   }
-   mov(a, to_string(total));
+   // int value = getValue(a);
+   // int lengthOfArr = bitnumberof(a);
+   // int binaryArr[lengthOfArr - 1];
+   // for (int i = 0; value > 0; i++)
+   // {
+   //    binaryArr[i] = value % 2;
+   //    value = value / 2;
+   // }
+   // for (int i = 0; i < lengthOfArr - 1; i++)
+   // {
+   //    int temp = binaryArr[i + 1];
+   //    binaryArr[i + 1] = binaryArr[i];
+   //    binaryArr[i] = temp;
+   // }
+   // int total = 0;
+   // int i = 0;
+   // if (i == 0)
+   // {
+   //    total = binaryArr[0] * 2;
+   //    i++;
+   // }
+   // for (i = 1; i < lengthOfArr; i++)
+   // {
+   //    int two = 1;
+   //    for (int j = 0; j < i; j++)
+   //    {
+   //       two = 2 * two;
+   //    }
+   //    total += binaryArr[i] * two;
+   // }
+   // mov(a, to_string(total));
+   int bit = bitnumberof(a);
+   int val = getValue(b);
+   int va = getValue(a);
+   mov(a, to_string(   ((va<<val) % (1 << bit)) + (va<<val)/(1<<bit)            ));
 
    // rcl=> (a<<1)%(1<<8)  + (a<<1)/(1<<8)  check above
 }
@@ -1447,7 +1470,7 @@ bool _int(string operand)
          {
             cout << "output:";
          }
-         cout << (char)getValue("dl");
+         cout << (char)getValue("dl") << flush;
          if (DebugMode)
          {
             cout << endl;
@@ -1496,7 +1519,10 @@ bool mul(string operand)
       else if (bitnumberof(operand) == 16)
       {
          int val = getValue("ax") * getValue(operand);
-         cout << "mul val:" << val << endl;
+         if (DebugMode)
+         {
+            cout << "mul val:" << val << endl;
+         }
          int valdx = 0, valax = 0;
          // if (val > (1 << 32))// böyle bir durum olamaz zaten ya, niye yazdım ki ??
          // { // set flags
@@ -1814,6 +1840,30 @@ bool sub(string a, string b)
             //error
          }
       }
+   }
+   else if (typeA == "dw" || typeA == "db")
+   {
+      // int ans=0;
+      if((getValue(a)-getValue(b)<0)){
+         cf = 1;
+         sf = 1;
+      }else if((getValue(a)-getValue(b))==0){
+         zf = 1;
+      }
+         if(typeB=="value"||typeB=="offset"){
+         mov(a, to_string(getValue(a) - getValue(b)));
+         }
+         else{
+         if (bitA == bitB)
+         {
+            mov(a, to_string(getValue(a) - getValue(b)));
+         }
+         else
+         {
+            error("sth occur");
+         }
+         }
+      // exit(1);
    }
    else
    {
