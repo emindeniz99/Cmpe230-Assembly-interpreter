@@ -5,7 +5,7 @@
 
 using namespace std;
 
-bool DebugMode = true; // to get real outputs, assign it false
+bool DebugMode = false; // to get real outputs, assign it false
 
 // prototypes
 template <class datatype>
@@ -74,7 +74,6 @@ string strip(string &str);
 void lowerCase(string &str);
 
 bool mov(string a, string b);
-bool add(string a, string b);
 void jnc(string a);
 void jc(string a);
 void jbe(string a);
@@ -102,6 +101,10 @@ bool rcl(string a, string b);
 bool _int(string operand);
 bool mul(string operand);
 bool div(string operand);
+bool inc(string operand);
+bool inc(string operand);
+bool add(string a, string b);
+bool sub(string a, string b);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
@@ -351,18 +354,6 @@ int main(int argc, char *argv[])
          // else if(ins=="sub"){
          //    sub(first,second);
          // }
-         // else if(ins=="inc"){
-         //    inc(first,second);
-         // }
-         // else if(ins=="dec"){
-         //    dec(first,second);
-         // }
-         // else if(ins=="mul"){
-         //    mul(first,second);
-         // }
-         // else if(ins=="div"){
-         //    div(first,second);
-         // }
          else if (ins == "xor")
          {
             _xor(first, second);
@@ -490,6 +481,11 @@ int main(int argc, char *argv[])
          {
             div(first);
          }
+         // else if(ins=="inc"){
+         //    add(first,"1");
+         // }else if(ins=="dec"){
+         //    sub(first,"1");
+         // }
          else
          {
             cout << "Error" << endl;
