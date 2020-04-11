@@ -322,12 +322,12 @@ int main(int argc, char *argv[])
          {
             cmp(first, second);
          }
-         // else if(ins=="add"){
-         // add(first,second);
-         // }
-         // else if(ins=="sub"){
-         //    sub(first,second);
-         // }
+         else if(ins=="add"){
+            add(first,second);
+         }
+         else if(ins=="sub"){
+            sub(first,second);
+         }
          // else if(ins=="inc"){
          //    inc(first,second);
          // }
@@ -1008,9 +1008,7 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
    return true;
 }
 
-bool add(string dest, string src)
-{
-}
+
 
 bool push(string operand)
 {
@@ -1356,4 +1354,177 @@ bool rcr(string a, string b)
       total += binaryArr[i] * two;
    }
    mov(a, to_string(total));
+}
+
+//Register to register
+//Memory to register
+//Register to memory
+//Register to constant data
+//Memory to constant data
+bool add(string a, string b){
+   string typeA = typeofoperand(a);
+   string typeB = typeofoperand(b);
+   int bitA = bitnumberof(a);
+   int bitB = bitnumberof(b);
+   if(typeA=="reg" && typeB=="reg"){
+      strip(a);
+      strip(b);
+     
+      if(bitA == bitB){
+         int temp = getValue(a) + getValue(b);
+         // maybe temp can be high value !!!
+         mov(a, temp);
+      }else{
+         //error bit number is not appropriate
+      }
+   }else  if(typeA=="memory" && typeB=="reg"){
+         if(bitA == 16 && bitB==16){
+            int temp = getValue(a) + getValue(b);
+            mov(a, temp);
+         }else if(bitA == 8 && bitB==8){
+            int temp = getValue(a) + getValue(b);
+            mov(a, temp);
+         }else{
+            error("bit problems");
+         }
+   }else  if(typeA=="reg" && typeB=="memory"){
+          if(bitA == 16 && bitB==16){
+            int temp = getValue(a) + getValue(b);
+            mov(a, temp);
+         }else if(bitA == 8 && bitB==8){
+            int temp = getValue(a) + getValue(b);
+            mov(a, temp);
+         }else{
+            error("bit problems");
+         }
+   }else  if(typeA=="reg" && typeB=="value"){
+         strip(a);
+         int temp = getValue(a) + getValue(b);
+         // maybe temp can be high value !!!
+         mov(a,temp);
+   }else  if(typeA=="memory" && typeB=="value"){
+         if(bitA == 16){
+            if(getValue(b) < 1 <<16){
+               //getValue(a) can be change
+               int temp = getValue(a) + getValue(b);
+               mov(a,temp);
+               //if (getValue(src) < 1 << 16)
+               //{
+               //   getMemoRef(dest) = getValue(src);
+               //   *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
+               //}
+            }else{
+               //error
+            }
+         }else if(bitA == 8){
+            if(getValue(b) < 1 <<8){
+               int temp = getValue(a) + getValue(b);
+               mov(a,temp);
+            }else{
+               //error
+            }
+         }
+   }else{
+      //error
+   }
+}
+
+
+bool sub(string a, string b){
+   string typeA = typeofoperand(a);
+   string typeB = typeofoperand(b);
+   int bitA = bitnumberof(a);
+   int bitB = bitnumberof(b);
+   if(typeA=="reg" && typeB=="reg"){
+      strip(a);
+      strip(b);
+      if(bitA == bitB){
+         int temp = getValue(a) - getValue(b);
+         if(temp<0){
+           //negative value operations
+         } else{
+         mov(a, temp);
+         }          
+      }else{
+         //error bit number is not appropriate
+      }
+   }else  if(typeA=="memory" && typeB=="reg"){
+         if(bitA == 16 && bitB==16){
+            int temp = getValue(a) - getValue(b);
+            if(temp<0){
+               //negative value operations
+            } else{
+            mov(a, temp);
+            } 
+         }else if(bitA == 8 && bitB==8){
+            int temp = getValue(a) - getValue(b);
+            if(temp<0){
+               //negative value operations
+            } else{
+            mov(a, temp);
+            } 
+         }else{
+            error("bit problems");
+         }
+   }else  if(typeA=="reg" && typeB=="memory"){
+          if(bitA == 16 && bitB==16){
+            int temp = getValue(a) - getValue(b);
+            if(temp<0){
+               //negative value operations
+            } else{
+            mov(a, temp);
+            } 
+         }else if(bitA == 8 && bitB==8){
+            int temp = getValue(a) - getValue(b);
+            if(temp<0){
+               //negative value operations
+            } else{
+            mov(a, temp);
+            } 
+         }else{
+            error("bit problems");
+         }
+   }else  if(typeA=="reg" && typeB=="value"){
+         strip(a);
+         int temp = getValue(a) - getValue(b);
+         if(temp<0){
+           //negative value operations
+         }else{
+            mov(a, temp);
+         } 
+   }else  if(typeA=="memory" && typeB=="value"){
+         if(bitA == 16){
+            if(getValue(b) < 1 <<16){
+               //getValue(a) can be change
+               int temp = getValue(a) - getValue(b);
+               if(temp<0){
+                  //negative value operations
+               }else{
+                  mov(a, temp);
+               } 
+               //if (getValue(src) < 1 << 16)
+               //{
+               //   getMemoRef(dest) = getValue(src);
+               //   *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
+               //}
+            }else{
+               //error
+            }
+         }else if(bitA == 8){
+            if(getValue(b) < 1 <<8){
+               int temp = getValue(a) - getValue(b);
+               if(temp<0){
+               //negative value operations
+               }else{
+                  mov(a, temp);
+               } 
+            }else{
+               //error
+            }
+         }
+   }else{
+      //error
+   }
+}
+
 }
