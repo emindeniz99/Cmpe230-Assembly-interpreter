@@ -5,6 +5,8 @@
 
 using namespace std;
 
+bool DebugMode = false; // to get real outputs, assign it false
+
 // prototypes
 template <class datatype>
 void print_bits(datatype x);
@@ -72,7 +74,6 @@ string strip(string &str);
 void lowerCase(string &str);
 
 bool mov(string a, string b);
-bool add(string a, string b);
 void jnc(string a);
 void jc(string a);
 void jbe(string a);
@@ -97,6 +98,13 @@ bool push(string operand);
 bool pop(string operand);
 bool rcr(string a, string b);
 bool rcl(string a, string b);
+bool _int(string operand);
+bool mul(string operand);
+bool div(string operand);
+bool inc(string operand);
+bool inc(string operand);
+bool add(string a, string b);
+bool sub(string a, string b);
 
 int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 
@@ -104,7 +112,10 @@ int tointeger(string str); // 1205h -> 4555 , 'd'->24 str to int ascii....
 void error(string errormsg)
 {
    cout << "ERROR: " << errormsg << endl;
-   //  exit(1);   // comment it to avoid from stopping program
+   if (!DebugMode)
+   {
+      exit(1); // comment it to avoid from stopping program
+   }
 }
 
 int sayac = -1; // !
@@ -121,7 +132,11 @@ int main(int argc, char *argv[])
       cerr << "Please, give filename as an argument" << endl;
       return 0;
    }
-   cout << "Loaded filename: " << argv[1] << endl;
+   if (DebugMode)
+   {
+      cout << "Loaded filename: " << argv[1] << endl;
+   }
+
    ifstream file("./" + (string)argv[1]);
 
    if (file.peek() == EOF) // checks if file exists or not
@@ -231,15 +246,16 @@ int main(int argc, char *argv[])
             return 0;
          }
          ins = ins.substr(0, ins.length() - 1);
-         // cout << "label buldum "<< endl;
+         // cout << "label buldum :"<<sayac<< endl;
          labels[ins] = sayac;
       }
       else
       {
          commands.push_back(line);
+         sayac++;
       }
 
-      sayac++;
+      // sayac++; // wrong place for sayac, i moved above
 
       // vector<string> result;
       // while (ss.good()) // AX,[ 0abcdh ]
@@ -269,31 +285,38 @@ int main(int argc, char *argv[])
       // }
    }
 
-   // print instructions
-   for (int i = 0; i < commands.size(); i++)
+   if (DebugMode)
    {
-      cout << "[" << i << "] " << commands[i] << endl;
+      // print instructions
+      for (int i = 0; i < commands.size(); i++)
+      {
+         cout << "[" << i << "] " << commands[i] << endl;
+      }
+      map<string, int>::iterator it;
+
+      cout << endl
+           << "Labels:\n";
+      for (it = labels.begin(); it != labels.end(); ++it)
+         cout << it->first << " => " << it->second << '\n';
+      cout << endl;
+
+      map<string, pair<string, int>>::iterator it2;
+      cout << "Variables:\n";
+      for (it2 = variables.begin(); it2 != variables.end(); ++it2)
+         cout << it2->first << " => " << it2->second.first << " [" << it2->second.second << "]" << '\n';
+      cout << endl;
+
+      cout << "Program starts execution" << endl;
    }
 
-   map<string, int>::iterator it;
-
-   cout << endl
-        << "Labels:\n";
-   for (it = labels.begin(); it != labels.end(); ++it)
-      cout << it->first << " => " << it->second << '\n';
-   cout << endl;
-
-   map<string, pair<string, int>>::iterator it2;
-   cout << "Variables:\n";
-   for (it2 = variables.begin(); it2 != variables.end(); ++it2)
-      cout << it2->first << " => " << it2->second.first << " [" << it2->second.second << "]" << '\n';
-   cout << endl;
-
-   cout << "Program starts execution" << endl;
-   while (PC != commands.size())
+   while (PC < commands.size())
    {
-      cout << endl
-           << "line: " << PC << endl;
+      if (DebugMode)
+      {
+         cout << endl
+              << "line: " << PC << endl;
+      }
+
       string currcmd = commands[PC];
       istringstream iss(currcmd);
       string ins;
@@ -311,7 +334,10 @@ int main(int argc, char *argv[])
          // iss >> second;
          strip(first);
          strip(second);
-         cout << "Ins: " << ins << " Dest: " << first << " Src: " << second << endl;
+         if (DebugMode)
+         {
+            cout << "Ins: " << ins << " Dest: " << first << " Src: " << second << endl;
+         }
 
          if (ins == "mov")
          {
@@ -322,24 +348,14 @@ int main(int argc, char *argv[])
          {
             cmp(first, second);
          }
-         else if(ins=="add"){
-            add(first,second);
+         else if (ins == "add")
+         {
+            add(first, second);
          }
-         else if(ins=="sub"){
-            sub(first,second);
+         else if (ins == "sub")
+         {
+            sub(first, second);
          }
-         // else if(ins=="inc"){
-         //    inc(first,second);
-         // }
-         // else if(ins=="dec"){
-         //    dec(first,second);
-         // }
-         // else if(ins=="mul"){
-         //    mul(first,second);
-         // }
-         // else if(ins=="div"){
-         //    div(first,second);
-         // }
          else if (ins == "xor")
          {
             _xor(first, second);
@@ -368,17 +384,21 @@ int main(int argc, char *argv[])
          {
             shr(first, second);
          }
-         // else if(ins=="int20h"){
-         //    int20h(first,second);
-         // }
+         else
+         {
+            cout << "Error" << endl;
+            exit(1);
+         }
       }
       else
       {
          string first;
          getline(iss, first, ',');
          strip(first);
-         cout << "Ins: " << ins << " Dest: " << first << endl;
-
+         if (DebugMode)
+         {
+            cout << "Ins: " << ins << " Dest: " << first << endl;
+         }
          if (ins == "push")
          {
             push(first);
@@ -442,11 +462,36 @@ int main(int argc, char *argv[])
          }
          else if (ins == "nop")
          {
-            cout << "NOP - continue" << endl;
+            if (DebugMode)
+            {
+               cout << "NOP - continue" << endl;
+            }
          }
          else if (ins == "not")
          {
             _not(first);
+         }
+         else if (ins == "int")
+         {
+            _int(first);
+         }
+         else if (ins == "mul")
+         {
+            mul(first);
+         }
+         else if (ins == "div")
+         {
+            div(first);
+         }
+         // else if(ins=="inc"){
+         //    add(first,"1");
+         // }else if(ins=="dec"){
+         //    sub(first,"1");
+         // }
+         else
+         {
+            cout << "Error" << endl;
+            exit(1);
          }
       }
 
@@ -458,13 +503,18 @@ int main(int argc, char *argv[])
       //    cout<<substr;
       //    result.push_back(substr);
       // }
-      print_16bitregs();
-      printmemo();
-      printflags();
-      printStack();
+      if (DebugMode)
+      {
+         print_16bitregs();
+         printmemo();
+         printflags();
+         printStack();
+      }
+
       PC++;
    }
 
+   cout << endl;
    // 2. Place  dw and db data  and compute addresses
 
    // 3.  PC = line 0
@@ -481,19 +531,23 @@ int main(int argc, char *argv[])
    //     }
    //
    // }
-   cout << endl
-        << "registers:" << endl;
-   print_16bitregs();
+   if (DebugMode)
+   {
+      cout << endl
+           << "registers:" << endl;
+      print_16bitregs();
 
-   cout << endl
-        << "variable memo:" << endl;
-   printmemo();
-   cout << endl
-        << "flags:" << endl;
-   printflags();
-   cout << endl
-        << "stack:" << endl;
-   printStack();
+      cout << endl
+           << "variable memo:" << endl;
+      printmemo();
+      cout << endl
+           << "flags:" << endl;
+      printflags();
+      cout << endl
+           << "stack:" << endl;
+      printStack();
+   }
+
    // print_hex(*pah);
    // print_hex(*pal);
 }
@@ -727,6 +781,7 @@ int bitnumberof(string operand)
    // variable
 }
 
+// returns "reg" "memory" "offset" "offset" "dw" "db"
 string typeofoperand(string operand)
 {
    strip(operand);
@@ -809,7 +864,7 @@ int getValue(string operand)
       string innerstr = bwsiztemp.substr(1, bwsiztemp.length() - 2);
       strip(innerstr);
       int inval = getValue(innerstr);
-      cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
+      // cout << "debug: " << memory[inval + 1] * (1 << 8) << "   " << 0 + memory[inval] << endl;
       return memory[inval + 1] * (1 << 8) + memory[inval];
    }
    else if (temp.find("offset") == 0)
@@ -894,9 +949,13 @@ unsigned char &getMemoRef(string operand)
 
 bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/how-to-store-pointers-in-map/4088449
 {
-   cout << "value - bit - type" << endl
-        << getValue(dest) << " " << bitnumberof(dest) << "  " << typeofoperand(dest) << endl
-        << getValue(src) << "   " << bitnumberof(src) << "  " << typeofoperand(src) << endl;
+   if (DebugMode)
+   {
+      cout << "[in mov ] value - bit - type" << endl
+           << getValue(dest) << " " << bitnumberof(dest) << "  " << typeofoperand(dest) << endl
+           << getValue(src) << "   " << bitnumberof(src) << "  " << typeofoperand(src) << endl;
+   }
+
    string typedest = typeofoperand(dest);
    string typesrc = typeofoperand(src);
 
@@ -1008,8 +1067,6 @@ bool mov(string dest, string src) //https://stackoverflow.com/questions/4088387/
    return true;
 }
 
-
-
 bool push(string operand)
 {
 
@@ -1041,7 +1098,11 @@ bool pop(string operand)
 {
 
    string value = to_string(getValue("w[" + to_string((int)sp + 2) + "]"));
-   cout << "pop val:" << value << endl;
+   if (DebugMode)
+   {
+      cout << "pop val:" << value << endl;
+   }
+
    if (bitnumberof(operand) == 16)
    {
       mov(operand, value);
@@ -1067,13 +1128,13 @@ bool _and(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-      getValue(a) & getValue(b);
+      mov(a, to_string(getValue(a) & getValue(b)));
    }
    else
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         getValue(a) & getValue(b);
+         mov(a, to_string(getValue(a) & getValue(b)));
       }
    }
    return true;
@@ -1082,13 +1143,15 @@ bool _or(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-      getValue(a) | getValue(b);
+      mov(a, to_string(getValue(a) | getValue(b)));
    }
    else
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         getValue(a) | getValue(b);
+         // cout<<a<<"-"<<b<<endl;
+         // cout<<"asdas"<<(getValue(a) | getValue(b))<<endl;
+         mov(a, to_string(getValue(a) | getValue(b)));
       }
    }
    return true;
@@ -1097,13 +1160,13 @@ bool _xor(string a, string b)
 {
    if (typeofoperand(a) == "value" || typeofoperand(b) == "value")
    {
-      getValue(a) ^ getValue(b);
+      mov(a, to_string(getValue(a) ^ getValue(b)));
    }
    else
    {
       if (bitnumberof(a) == bitnumberof(b))
       {
-         getValue(a) ^ getValue(b);
+         mov(a, to_string(getValue(a) ^ getValue(b)));
       }
    }
    return true;
@@ -1320,40 +1383,180 @@ bool rcl(string a, string b)
       total += binaryArr[i] * two;
    }
    mov(a, to_string(total));
+
+   // rcl=> (a<<1)%(1<<8)  + (a<<1)/(1<<8)  check above
 }
 bool rcr(string a, string b)
 {
-   int value = getValue(a);
-   int lengthOfArr = bitnumberof(a);
-   int binaryArr[lengthOfArr - 1];
-   for (int i = 0; value > 0; i++)
+   // int value = getValue(a);
+   // int lengthOfArr = bitnumberof(a);
+   // int binaryArr[lengthOfArr - 1];
+   // for (int i = 0; value > 0; i++)
+   // {
+   //    binaryArr[i] = value % 2;
+   //    value = value / 2;
+   // }
+   // for (int i = 0; i < lengthOfArr - 1; i++)
+   // {
+   //    int temp = binaryArr[i];
+   //    binaryArr[i] = binaryArr[i + 1];
+   //    binaryArr[i + 1] = temp;
+   // }
+   // int total = 0;
+   // int i = 0;
+   // if (i == 0)
+   // {
+   //    total = binaryArr[0] * 2;
+   //    i++;
+   // }
+   // for (i = 1; i < lengthOfArr; i++)
+   // {
+   //    int two = 1;
+   //    for (int j = 0; j < i; j++)
+   //    {
+   //       two = 2 * two;
+   //    }
+   //    total += binaryArr[i] * two;
+   // }
+   // mov(a, to_string(total%(bitnumberof(a))));
+   int bit = bitnumberof(a);
+   int val = getValue(b);
+   int va = getValue(a);
+   mov(a, to_string(((va) % (1 << val)) * (1 << (bit - val)) + (va >> val)));
+}
+
+bool _int(string operand)
+{
+   strip(operand);
+   if (operand == "21h")
    {
-      binaryArr[i] = value % 2;
-      value = value / 2;
-   }
-   for (int i = 0; i < lengthOfArr - 1; i++)
-   {
-      int temp = binaryArr[i];
-      binaryArr[i] = binaryArr[i + 1];
-      binaryArr[i + 1] = temp;
-   }
-   int total = 0;
-   int i = 0;
-   if (i == 0)
-   {
-      total = binaryArr[0] * 2;
-      i++;
-   }
-   for (i = 1; i < lengthOfArr; i++)
-   {
-      int two = 1;
-      for (int j = 0; j < i; j++)
+      if (getValue("ah") == 1)
       {
-         two = 2 * two;
+         char temp;
+         cin >> temp;
+         if (DebugMode)
+         {
+            cout << "input(ascii dec no):" << to_string(temp) << endl;
+         }
+
+         *(converter8bit["al"]) = temp;
       }
-      total += binaryArr[i] * two;
+      else if (getValue("ah") == 2)
+      {
+         if (DebugMode)
+         {
+            cout << "output:";
+         }
+         cout << (char)getValue("dl");
+         if (DebugMode)
+         {
+            cout << endl;
+         }
+      }
+      else
+      {
+         error("what does int 21h do?");
+      }
    }
-   mov(a, to_string(total));
+   else if (operand == "20h")
+   {
+      if (DebugMode)
+      {
+         cout << "int20h stop" << endl;
+      }
+      exit(1);
+   }
+   else
+   {
+      error("wrong int 21h parameter");
+      return false;
+   }
+   return true;
+}
+
+bool mul(string operand)
+{
+   if (typeofoperand(operand) == "reg" || typeofoperand(operand) == "memo")
+   {
+      if (bitnumberof(operand) == 8)
+      {
+         int val = getValue("al") * getValue(operand);
+         // if (val > (1 << 16)) // böyle bir durum olamaz zaten ya, niye yazdım ki ??
+         // { // set flags
+
+         //    val = val % (1 << 16);
+         // }
+         if (val >= (1 << 8))
+         {
+            of = true;
+            cf = true;
+         }
+         mov("ax", to_string(val));
+      }
+      else if (bitnumberof(operand) == 16)
+      {
+         int val = getValue("ax") * getValue(operand);
+         cout << "mul val:" << val << endl;
+         int valdx = 0, valax = 0;
+         // if (val > (1 << 32))// böyle bir durum olamaz zaten ya, niye yazdım ki ??
+         // { // set flags
+         //    //setFLAG
+         //    val=val % (1 << 16);
+         // }
+         if (val >= (1 << 16))
+         {
+            of = true;
+            cf = true;
+         }
+         valdx = val / (1 << 16);
+         valax = val % (1 << 16);
+         mov("ax", to_string(valax));
+         mov("dx", to_string(valdx));
+      }
+   }
+   else
+   {
+      error("wrong type operand");
+   }
+}
+
+// note
+// val > (1<<16) yapınca eşitlik durumunu unutuyorsun, eşitlik durumunu da ekle !
+
+bool div(string operand)
+{
+   if (typeofoperand(operand) == "reg" || typeofoperand(operand) == "memo")
+   {
+      if (getValue(operand) == 0)
+      {
+         error("divide by 0 :D");
+      }
+      if (bitnumberof(operand) == 8)
+      {
+         int valal = getValue("ax") / getValue(operand);
+         int valah = getValue("ax") % getValue(operand);
+         mov("al", to_string(valal));
+         mov("ah", to_string(valah));
+      }
+      else if (bitnumberof(operand) == 16)
+      {
+         int base = getValue("dx") * (1 << 16) + getValue("ax");
+         int valax = base / getValue(operand);
+         int valdx = base % getValue(operand);
+         if (valax > ((1 << 16) - 1))
+         {
+            error("Div error, you cannot store the quotient in ax because  there aren't enough bits");
+         }
+         mov("ax", to_string(valax));
+         mov("dx", to_string(valdx));
+      }
+   }
+   else
+   {
+      error("wrong type operand");
+   }
+
+   // when 1555555555/2, you cannot store the quotient in ax because  there aren't enough bits
 }
 
 //Register to register
@@ -1361,170 +1564,259 @@ bool rcr(string a, string b)
 //Register to memory
 //Register to constant data
 //Memory to constant data
-bool add(string a, string b){
+bool add(string a, string b)
+{
    string typeA = typeofoperand(a);
    string typeB = typeofoperand(b);
    int bitA = bitnumberof(a);
    int bitB = bitnumberof(b);
-   if(typeA=="reg" && typeB=="reg"){
+   if (typeA == "reg" && typeB == "reg")
+   {
       strip(a);
       strip(b);
-     
-      if(bitA == bitB){
+
+      if (bitA == bitB)
+      {
          int temp = getValue(a) + getValue(b);
          // maybe temp can be high value !!!
-         mov(a, temp);
-      }else{
+         mov(a, to_string(temp));
+      }
+      else
+      {
          //error bit number is not appropriate
       }
-   }else  if(typeA=="memory" && typeB=="reg"){
-         if(bitA == 16 && bitB==16){
-            int temp = getValue(a) + getValue(b);
-            mov(a, temp);
-         }else if(bitA == 8 && bitB==8){
-            int temp = getValue(a) + getValue(b);
-            mov(a, temp);
-         }else{
-            error("bit problems");
-         }
-   }else  if(typeA=="reg" && typeB=="memory"){
-          if(bitA == 16 && bitB==16){
-            int temp = getValue(a) + getValue(b);
-            mov(a, temp);
-         }else if(bitA == 8 && bitB==8){
-            int temp = getValue(a) + getValue(b);
-            mov(a, temp);
-         }else{
-            error("bit problems");
-         }
-   }else  if(typeA=="reg" && typeB=="value"){
-         strip(a);
+   }
+   else if (typeA == "memory" && typeB == "reg")
+   {
+      if (bitA == 16 && bitB == 16)
+      {
          int temp = getValue(a) + getValue(b);
-         // maybe temp can be high value !!!
-         mov(a,temp);
-   }else  if(typeA=="memory" && typeB=="value"){
-         if(bitA == 16){
-            if(getValue(b) < 1 <<16){
-               //getValue(a) can be change
-               int temp = getValue(a) + getValue(b);
-               mov(a,temp);
-               //if (getValue(src) < 1 << 16)
-               //{
-               //   getMemoRef(dest) = getValue(src);
-               //   *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
-               //}
-            }else{
-               //error
-            }
-         }else if(bitA == 8){
-            if(getValue(b) < 1 <<8){
-               int temp = getValue(a) + getValue(b);
-               mov(a,temp);
-            }else{
-               //error
-            }
+         mov(a, to_string(temp));
+      }
+      else if (bitA == 8 && bitB == 8)
+      {
+         int temp = getValue(a) + getValue(b);
+         mov(a, to_string(temp));
+      }
+      else
+      {
+         error("bit problems");
+      }
+   }
+   else if (typeA == "reg" && typeB == "memory")
+   {
+      if (bitA == 16 && bitB == 16)
+      {
+         int temp = getValue(a) + getValue(b);
+         mov(a, to_string(temp));
+      }
+      else if (bitA == 8 && bitB == 8)
+      {
+         int temp = getValue(a) + getValue(b);
+         mov(a, to_string(temp));
+      }
+      else
+      {
+         error("bit problems");
+      }
+   }
+   else if (typeA == "reg" && typeB == "value")
+   {
+      strip(a);
+      int temp = getValue(a) + getValue(b);
+      // maybe temp can be high value !!!
+      mov(a, to_string(temp));
+   }
+   else if (typeA == "memory" && typeB == "value")
+   {
+      if (bitA == 16)
+      {
+         if (getValue(b) < 1 << 16)
+         {
+            //getValue(a) can be change
+            int temp = getValue(a) + getValue(b);
+            mov(a, to_string(temp));
+            //if (getValue(src) < 1 << 16)
+            //{
+            //   getMemoRef(dest) = getValue(src);
+            //   *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
+            //}
          }
-   }else{
+         else
+         {
+            //error
+         }
+      }
+      else if (bitA == 8)
+      {
+         if (getValue(b) < 1 << 8)
+         {
+            int temp = getValue(a) + getValue(b);
+            mov(a, to_string(temp));
+         }
+         else
+         {
+            //error
+         }
+      }
+   }
+   else
+   {
       //error
    }
 }
 
-
-bool sub(string a, string b){
+bool sub(string a, string b)
+{
    string typeA = typeofoperand(a);
    string typeB = typeofoperand(b);
    int bitA = bitnumberof(a);
    int bitB = bitnumberof(b);
-   if(typeA=="reg" && typeB=="reg"){
+   if (typeA == "reg" && typeB == "reg")
+   {
       strip(a);
       strip(b);
-      if(bitA == bitB){
+      if (bitA == bitB)
+      {
          int temp = getValue(a) - getValue(b);
-         if(temp<0){
-           //negative value operations
-         } else{
-         mov(a, temp);
-         }          
-      }else{
+         if (temp < 0)
+         {
+            //negative value operations
+         }
+         else
+         {
+            mov(a, to_string(temp));
+         }
+      }
+      else
+      {
          //error bit number is not appropriate
       }
-   }else  if(typeA=="memory" && typeB=="reg"){
-         if(bitA == 16 && bitB==16){
-            int temp = getValue(a) - getValue(b);
-            if(temp<0){
-               //negative value operations
-            } else{
-            mov(a, temp);
-            } 
-         }else if(bitA == 8 && bitB==8){
-            int temp = getValue(a) - getValue(b);
-            if(temp<0){
-               //negative value operations
-            } else{
-            mov(a, temp);
-            } 
-         }else{
-            error("bit problems");
-         }
-   }else  if(typeA=="reg" && typeB=="memory"){
-          if(bitA == 16 && bitB==16){
-            int temp = getValue(a) - getValue(b);
-            if(temp<0){
-               //negative value operations
-            } else{
-            mov(a, temp);
-            } 
-         }else if(bitA == 8 && bitB==8){
-            int temp = getValue(a) - getValue(b);
-            if(temp<0){
-               //negative value operations
-            } else{
-            mov(a, temp);
-            } 
-         }else{
-            error("bit problems");
-         }
-   }else  if(typeA=="reg" && typeB=="value"){
-         strip(a);
+   }
+   else if (typeA == "memory" && typeB == "reg")
+   {
+      if (bitA == 16 && bitB == 16)
+      {
          int temp = getValue(a) - getValue(b);
-         if(temp<0){
-           //negative value operations
-         }else{
-            mov(a, temp);
-         } 
-   }else  if(typeA=="memory" && typeB=="value"){
-         if(bitA == 16){
-            if(getValue(b) < 1 <<16){
-               //getValue(a) can be change
-               int temp = getValue(a) - getValue(b);
-               if(temp<0){
-                  //negative value operations
-               }else{
-                  mov(a, temp);
-               } 
-               //if (getValue(src) < 1 << 16)
-               //{
-               //   getMemoRef(dest) = getValue(src);
-               //   *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
-               //}
-            }else{
-               //error
-            }
-         }else if(bitA == 8){
-            if(getValue(b) < 1 <<8){
-               int temp = getValue(a) - getValue(b);
-               if(temp<0){
+         if (temp < 0)
+         {
+            //negative value operations
+         }
+         else
+         {
+            mov(a, to_string(temp));
+         }
+      }
+      else if (bitA == 8 && bitB == 8)
+      {
+         int temp = getValue(a) - getValue(b);
+         if (temp < 0)
+         {
+            //negative value operations
+         }
+         else
+         {
+            mov(a, to_string(temp));
+         }
+      }
+      else
+      {
+         error("bit problems");
+      }
+   }
+   else if (typeA == "reg" && typeB == "memory")
+   {
+      if (bitA == 16 && bitB == 16)
+      {
+         int temp = getValue(a) - getValue(b);
+         if (temp < 0)
+         {
+            //negative value operations
+         }
+         else
+         {
+            mov(a, to_string(temp));
+         }
+      }
+      else if (bitA == 8 && bitB == 8)
+      {
+         int temp = getValue(a) - getValue(b);
+         if (temp < 0)
+         {
+            //negative value operations
+         }
+         else
+         {
+            mov(a, to_string(temp));
+         }
+      }
+      else
+      {
+         error("bit problems");
+      }
+   }
+   else if (typeA == "reg" && typeB == "value")
+   {
+      strip(a);
+      int temp = getValue(a) - getValue(b);
+      if (temp < 0)
+      {
+         //negative value operations
+      }
+      else
+      {
+         mov(a, to_string(temp));
+      }
+   }
+   else if (typeA == "memory" && typeB == "value")
+   {
+      if (bitA == 16)
+      {
+         if (getValue(b) < 1 << 16)
+         {
+            //getValue(a) can be change
+            int temp = getValue(a) - getValue(b);
+            if (temp < 0)
+            {
                //negative value operations
-               }else{
-                  mov(a, temp);
-               } 
-            }else{
-               //error
+            }
+            else
+            {
+               mov(a, to_string(temp));
+            }
+            //if (getValue(src) < 1 << 16)
+            //{
+            //   getMemoRef(dest) = getValue(src);
+            //   *(&getMemoRef(dest) + 1) = getValue(src) >> 8;
+            //}
+         }
+         else
+         {
+            //error
+         }
+      }
+      else if (bitA == 8)
+      {
+         if (getValue(b) < 1 << 8)
+         {
+            int temp = getValue(a) - getValue(b);
+            if (temp < 0)
+            {
+               //negative value operations
+            }
+            else
+            {
+               mov(a, to_string(temp));
             }
          }
-   }else{
+         else
+         {
+            //error
+         }
+      }
+   }
+   else
+   {
       //error
    }
-}
-
 }
