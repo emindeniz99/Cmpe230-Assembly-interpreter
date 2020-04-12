@@ -5,3 +5,6 @@ to run
 ./main.o <inputfilepath>
 example
 ./main.o /mnt/c/Users/Projects/CMPE230/project1-assembly-interpreter/tests/Raw\ Tests/test9.asm
+
+CMPE 230 First Assignment Assembly Interpreter - 2020 Spring
+Emin Deniz & Onur Can Avcı 

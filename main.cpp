@@ -31,7 +31,7 @@ unsigned short si = 0;             // source index
 unsigned short sp = (1 << 16) - 2; // stackpoint
 unsigned short bp = 0;             // base pointer
 
-unsigned short PC = 0;  // Program Counter, it can be changed by Jump instructions
+unsigned short PC = 0; // Program Counter, it can be changed by Jump instructions
 
 bool zf; // zero flag
 bool sf; // sign flag
@@ -828,6 +828,7 @@ int getValue(string operand)
       }
       return tointeger(operand);
    }
+   return true;
 }
 
 // return reference of memory to use easily for assignment etc.
@@ -864,6 +865,7 @@ unsigned char &getMemoRef(string operand)
    {
       error("ERROR wrong memory referance");
    }
+   return memory[0];
 }
 
 // MOV ins
@@ -1310,6 +1312,7 @@ bool rcl(string a, string b)
    int va = getValue(a);
    mov(a, to_string(((va << (val)) % (1 << bit)) | (va << (val - 1)) / (1 << bit) | (cf * (1 << (val - 1)))));
    cf = (va / ((1 << (bitnumberof(a) - getValue(b))))) % 2;
+   return true;
 }
 
 // RCR
@@ -1320,6 +1323,7 @@ bool rcr(string a, string b)
    int va = getValue(a);
    mov(a, to_string(((va) % (1 << (val - 1))) * (1 << (bit - val + 1)) + cf * (1 << (bit - val)) + (va >> val))); // kontrol et !
    cf = (va >> (bitnumberof(b) - 1)) % 2;
+   return true;
 }
 
 // INT
@@ -1410,6 +1414,7 @@ bool mul(string operand)
    {
       error("wrong type operand");
    }
+   return true;
 }
 
 // DIV
@@ -1445,6 +1450,7 @@ bool div(string operand)
    {
       error("wrong type operand");
    }
+   return true;
 }
 
 //Register to register
@@ -1558,6 +1564,7 @@ bool add(string a, string b)
    {
       error("");
    }
+   return true;
 }
 
 // SUB
@@ -1759,6 +1766,7 @@ bool sub(string a, string b)
    {
       error("");
    }
+   return true;
 }
 
 // NOTES
